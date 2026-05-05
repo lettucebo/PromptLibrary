@@ -1,10 +1,3 @@
-export interface GitHubUser {
-  login: string;
-  name: string | null;
-  avatar_url: string;
-  html_url: string;
-}
-
 export interface Label {
   id: number;
   name: string;

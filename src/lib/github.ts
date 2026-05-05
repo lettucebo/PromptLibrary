@@ -2,9 +2,7 @@ import { Octokit } from '@octokit/rest';
 import { config } from '../config';
 import type { Label, ParsedLabel, Prompt, PromptComment } from '../types';
 
-export function createOctokit(token: string): Octokit {
-  return new Octokit({ auth: token });
-}
+const octokit = new Octokit();
 
 export function parseLabel(label: Label): ParsedLabel {
   const prefixes = config.labelPrefixes;
@@ -64,8 +62,7 @@ function mapIssueToPrompt(issue: {
   };
 }
 
-export async function fetchPrompts(token: string): Promise<Prompt[]> {
-  const octokit = createOctokit(token);
+export async function fetchPrompts(): Promise<Prompt[]> {
   const prompts: Prompt[] = [];
   let page = 1;
 
@@ -98,8 +95,7 @@ export async function fetchPrompts(token: string): Promise<Prompt[]> {
   return prompts;
 }
 
-export async function fetchPrompt(token: string, issueNumber: number): Promise<Prompt> {
-  const octokit = createOctokit(token);
+export async function fetchPrompt(issueNumber: number): Promise<Prompt> {
   const { data } = await octokit.rest.issues.get({
     owner: config.owner,
     repo: config.repo,
@@ -110,10 +106,8 @@ export async function fetchPrompt(token: string, issueNumber: number): Promise<P
 }
 
 export async function fetchPromptComments(
-  token: string,
   issueNumber: number
 ): Promise<PromptComment[]> {
-  const octokit = createOctokit(token);
   const { data } = await octokit.rest.issues.listComments({
     owner: config.owner,
     repo: config.repo,
@@ -130,8 +124,7 @@ export async function fetchPromptComments(
   }));
 }
 
-export async function fetchLabels(token: string): Promise<Label[]> {
-  const octokit = createOctokit(token);
+export async function fetchLabels(): Promise<Label[]> {
   const { data } = await octokit.rest.issues.listLabelsForRepo({
     owner: config.owner,
     repo: config.repo,
