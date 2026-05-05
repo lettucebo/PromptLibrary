@@ -34,5 +34,13 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: src/worker
           packageManager: pnpm
+          secrets: |
+            GITHUB_CLIENT_SECRET
+        env:
+          # GitHub Actions disallows secret names starting with `GITHUB_`,
+          # so we store it as OAUTH_CLIENT_SECRET and map it to the
+          # variable name the Worker expects (`GITHUB_CLIENT_SECRET`).
+          GITHUB_CLIENT_SECRET: ${{ secrets.OAUTH_CLIENT_SECRET }}

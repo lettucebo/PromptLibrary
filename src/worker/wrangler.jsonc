@@ -10,7 +10,7 @@
   "vars": {
     "OWNER": "lettucebo",
     "REPO": "PromptLibrary",
-    "GITHUB_CLIENT_ID": "REPLACE_ME",
-    "ALLOWED_ORIGIN": "https://lettucebo.github.io"
+    "GITHUB_CLIENT_ID": "Ov23li7yvXjWskhH6VHt",
+    "ALLOWED_ORIGIN": "https://lettucebo.github.io,http://localhost:5173"
   }
 }
