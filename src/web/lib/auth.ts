@@ -49,9 +49,14 @@ export function startLogin(returnTo?: string): void {
   }
   const state = generateState();
   sessionStorage.setItem(STORAGE_KEYS.OAUTH_STATE, state);
+  // Store the in-app route (HashRouter path), not the document path. The
+  // location.hash starts with `#`; strip it so React Router can navigate to it.
+  const currentRoute = window.location.hash.startsWith('#')
+    ? window.location.hash.slice(1) || '/'
+    : '/';
   sessionStorage.setItem(
     STORAGE_KEYS.OAUTH_RETURN_TO,
-    returnTo ?? `${window.location.pathname}${window.location.hash}`,
+    returnTo ?? currentRoute,
   );
 
   const redirect = config.siteUrl;
