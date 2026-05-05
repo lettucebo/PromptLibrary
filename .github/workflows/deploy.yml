@@ -2,6 +2,9 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'src/worker/**'
+      - '.github/workflows/deploy-worker.yml'
   workflow_dispatch:
 
 permissions:
@@ -18,12 +21,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-      - run: npm ci
-      - run: npm run build
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build
+        env:
+          VITE_GITHUB_CLIENT_ID: ${{ vars.VITE_GITHUB_CLIENT_ID }}
+          VITE_WORKER_URL: ${{ vars.VITE_WORKER_URL }}
+        run: pnpm build
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
@@ -37,3 +47,4 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+

@@ -2,7 +2,15 @@ node_modules
 dist
 dist-ssr
 *.local
-.env
-.env.local
-.env.production.local
 .DS_Store
+
+# SPA local env
+src/web/.env
+src/web/.env.local
+src/web/.env.production.local
+
+# Cloudflare Worker
+src/worker/.dev.vars
+src/worker/.wrangler
+src/worker/node_modules
+

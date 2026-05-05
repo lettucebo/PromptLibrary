@@ -1,80 +1,192 @@
 # Prompt Library
 
-A curated library of AI prompts, powered by GitHub Issues and built with React + Vite.
+A curated library of AI prompts, powered by GitHub Issues and built with React + Vite. Includes optional GitHub-OAuth-gated CRUD for repository collaborators.
 
 🌐 **Live Site**: [https://lettucebo.github.io/PromptLibrary/](https://lettucebo.github.io/PromptLibrary/)
 
 ## Features
 
-- 🔍 **Search & Filter** — Full-text search across prompt titles and content, with multi-category filters (model, type, use case, language, difficulty)
-- 🏷️ **Label-based taxonomy** — Prompts are tagged via GitHub Issue labels using structured prefixes (`model:`, `type:`, `usecase:`, `lang:`, `difficulty:`)
-- 📝 **Markdown rendering** — Prompt content rendered as formatted markdown with GFM support
-- 📋 **One-click copy** — Copy prompt text to clipboard instantly
-- 🔄 **Version history** — Issue comments serve as versioned iterations of each prompt
-- 🌙 **Dark mode** — System-aware dark/light theme with manual toggle
-- 🚀 **Zero backend** — Pure static SPA on GitHub Pages, no server or auth required
+- 🔍 **Search & Filter** — Full-text search and multi-category filters (model, type, use case, language, difficulty)
+- 🏷️ **Label-based taxonomy** — Prompts tagged via prefixed Issue labels (`model:`, `type:`, `usecase:`, `lang:`, `difficulty:`)
+- 📝 **Markdown** — Rendered with `react-markdown` + GFM; edited with `@uiw/react-md-editor`
+- 📋 **One-click copy** — Copy prompt or version text to clipboard
+- 🔄 **Version history** — Issue comments serve as versioned iterations
+- 🌙 **Dark mode** — System-aware with manual toggle
+- 🌐 **i18n** — Traditional Chinese (default) + English, switchable in nav
+- 🔐 **GitHub OAuth** — Sign-in for collaborators enables Prompt / Comment / Label CRUD with image uploads
+- 📦 **Pure SPA on GitHub Pages** + a tiny Cloudflare Worker for OAuth code exchange
+
+## Architecture
+
+```
+┌──────────────┐  unauth GET (read)        ┌─────────────────┐
+│  SPA on      │ ───────────────────────▶  │ GitHub REST API │
+│ GitHub Pages │                            └─────────────────┘
+│              │  OAuth code → token       ┌─────────────────────┐
+│              │ ─────────────────────────▶│ Cloudflare Worker   │
+│              │ ◀─────────────────────── │ (auth/exchange,     │
+│              │  token + permission       │  auth/logout)       │
+│              │                            └─────────────────────┘
+│              │  authed CRUD (write)      ┌─────────────────┐
+│              │ ───────────────────────▶  │ GitHub REST API │
+└──────────────┘                            └─────────────────┘
+```
+
+The Worker only handles the secret-bearing OAuth flow and gates by `repos/{owner}/{repo}/collaborators/{user}/permission`. After login, the SPA calls the GitHub API directly with the returned token.
 
 ## Tech Stack
 
 | Tool | Purpose |
 |------|---------|
 | React 18 + TypeScript | UI framework |
-| Vite | Build tool |
+| Vite 7 | Build tool |
 | Tailwind CSS 3 | Styling |
-| React Router v6 | Client-side routing (HashRouter for GitHub Pages) |
-| @tanstack/react-query | Data fetching & caching |
-| @octokit/rest | GitHub API client |
-| react-markdown + remark-gfm | Markdown rendering |
-| lucide-react | Icons |
+| React Router v7 | Client-side routing (HashRouter for GitHub Pages) |
+| @tanstack/react-query | Data fetching, caching, mutations |
+| @octokit/rest | GitHub API client (`getOctokit(token?)`) |
+| react-i18next | i18n |
+| @uiw/react-md-editor | Markdown editor |
+| rehype-sanitize | XSS protection in rendered Markdown |
+| Cloudflare Workers | OAuth code exchange + collaborator gating |
+| pnpm | Package manager |
 
-## How It Works
+## Data Model
 
-This is a **pure static SPA** deployed on GitHub Pages with **zero backend**. It reads data directly from the public GitHub API (no authentication required).
-
-Prompts are stored as **GitHub Issues** in this repository. Each issue represents a prompt:
-
-- **Title** → Prompt name
-- **Body** → Main prompt content (Markdown)
-- **Labels** → Categorization using prefixed labels:
-  - `model:gpt-4`, `model:claude-3` → AI model
-  - `type:system`, `type:user` → Prompt type
-  - `usecase:coding`, `usecase:writing` → Use case
-  - `lang:en`, `lang:zh-TW` → Language
-  - `difficulty:beginner`, `difficulty:advanced` → Difficulty
-- **Comments** → Version history (each comment = a new version)
-
-Issues with the `meta` label are excluded from the library.
-
-### API Rate Limits
-
-The site uses unauthenticated GitHub API calls (60 requests/hour). With React Query's 5-minute cache, this is more than sufficient for personal use. Each page view typically uses 1-2 API calls, and cached data is reused within the stale time window.
+| Concept | GitHub mapping |
+|---------|---------------|
+| Prompt | Open Issue without `meta` or `archived` label |
+| Prompt content | Issue body (Markdown) |
+| Prompt version | Issue comment (shown as v2, v3, …) |
+| Categories | Issue labels with prefixes (`model:`, `type:`, …) |
+| Soft delete | `archived` label + closed state |
+| Image attachment | Committed under `.attachments/<yyyymmdd>/<uuid>.<ext>` on the default branch |
 
 ## Local Development
 
-```bash
-# Install dependencies
-npm install
+### Prerequisites
 
-# Start dev server
-npm run dev
+- Node 20+
+- pnpm 10+
 
-# Build for production
-npm run build
+```pwsh
+# Install SPA dependencies
+pnpm install
+
+# Install Worker dependencies
+pnpm -C src/worker install
+
+# Copy env templates
+Copy-Item src/web/.env.example src/web/.env.local
+Copy-Item src/worker/.dev.vars.example src/worker/.dev.vars
 ```
+
+Fill in `src/web/.env.local`:
+
+```ini
+VITE_GITHUB_CLIENT_ID=<your OAuth App client id>
+VITE_WORKER_URL=http://localhost:8787
+```
+
+Fill in `src/worker/.dev.vars`:
+
+```ini
+GITHUB_CLIENT_SECRET=<your OAuth App client secret>
+```
+
+### Run
+
+```pwsh
+# Terminal 1 — SPA
+pnpm dev
+
+# Terminal 2 — Worker
+pnpm -C src/worker dev
+```
+
+Open `http://localhost:5173`.
+
+For local OAuth, also add `http://localhost:5173` to `src/worker/wrangler.jsonc` `vars.ALLOWED_ORIGIN` and to your OAuth App's Authorization callback URL.
+
+## Build
+
+```pwsh
+pnpm build
+pnpm preview
+```
+
+## OAuth App Setup
+
+1. https://github.com/settings/developers → **New OAuth App**
+2. Application name: `PromptLibrary`
+3. Homepage URL: `https://lettucebo.github.io/PromptLibrary/`
+4. **Authorization callback URL:** `https://lettucebo.github.io/PromptLibrary/` (the bare site root; `index.html` rewrites the OAuth `?code=&state=` to `#/auth/callback?...` before React boots).
+5. Generate a client secret. Save:
+   - **Client ID** → SPA `VITE_GITHUB_CLIENT_ID` and Worker `wrangler.jsonc` `vars.GITHUB_CLIENT_ID`
+   - **Client Secret** → `pnpm -C src/worker dlx wrangler secret put GITHUB_CLIENT_SECRET`
+
+## Cloudflare Worker
+
+See [src/worker/README.md](src/worker/README.md) for details. Summary:
+
+| Setting | Where |
+|---------|-------|
+| `OWNER`, `REPO`, `ALLOWED_ORIGIN`, `GITHUB_CLIENT_ID` | `src/worker/wrangler.jsonc` `vars` (committed) |
+| `GITHUB_CLIENT_SECRET` | `wrangler secret put` (encrypted, not committed) |
 
 ## Deployment
 
-The site is automatically deployed to GitHub Pages via GitHub Actions on every push to `main`. No secrets or environment variables are required.
+### SPA → GitHub Pages
 
-## Adding Prompts
+Auto-deploys via [.github/workflows/deploy.yml](.github/workflows/deploy.yml) on push to `main` (excluding `src/worker/**`).
 
-To add a new prompt to the library:
+Required repository **variables** (Settings → Secrets and variables → Actions → Variables tab):
 
-1. Create a new GitHub Issue in this repository
-2. Set the title as the prompt name
-3. Write the prompt content in the issue body (Markdown supported)
-4. Add relevant labels with the appropriate prefixes
-5. The prompt will appear in the library automatically
+- `VITE_GITHUB_CLIENT_ID`
+- `VITE_WORKER_URL` (e.g. `https://promptlibrary-auth.<account>.workers.dev`)
+
+(These are public values, so use **Variables**, not Secrets.)
+
+### Worker → Cloudflare
+
+Auto-deploys via [.github/workflows/deploy-worker.yml](.github/workflows/deploy-worker.yml) on changes under `src/worker/**`.
+
+Required repository **secret**:
+
+- `CLOUDFLARE_API_TOKEN` (account-level token with `Workers Scripts: Edit` permission)
+
+## Permissions Model
+
+Read access is unauthenticated and public.
+
+Write access (Prompt CRUD, Comment CRUD, Label CRUD, image upload) requires:
+
+1. Sign in via the **Login with GitHub** button
+2. Be a repo collaborator with `write` / `maintain` / `admin` permission
+
+The Worker enforces this gate at OAuth exchange time and refuses to issue a token to non-collaborators.
+
+## Soft delete
+
+There is no hard delete. Archive applies the `archived` label and closes the issue; restore removes the label and re-opens. The home list automatically excludes `archived` and `meta`-tagged issues.
+
+## Image upload
+
+In the Markdown editor, **drag & drop** or **paste** an image to upload. The image is committed to the repository under `.attachments/<yyyymmdd>/<uuid>.<ext>` on the default branch and inserted as a `raw.githubusercontent.com` URL. Each upload creates a separate commit; orphan files are not auto-pruned.
+
+## Security
+
+- **Token** stored in `localStorage` (`pl_gh_token`); the SPA never sees the OAuth client secret.
+- **CSP** — strict `Content-Security-Policy` meta tag in [src/web/index.html](src/web/index.html). `script-src 'self'`, `connect-src` whitelisted, `frame-ancestors 'none'`.
+- **XSS** — Markdown rendering uses `rehype-sanitize`.
+- **CSRF** — OAuth flow uses cryptographically-random `state` stored in `sessionStorage`.
+- **401 handling** — Octokit response hook auto-clears auth and prompts re-login on token revocation.
+- **CORS** — Worker rejects origins not in `ALLOWED_ORIGIN`.
+
+## Limitations
+
+- **Last-write-wins.** Concurrent edits are not detected.
+- **Orphan attachment files** are not auto-deleted on archive/restore.
+- **Rate limit** — read-only browsing uses unauthenticated calls (60/hour). Authenticated users have 5,000/hour.
 
 ## License
 

@@ -1,0 +1,119 @@
+{
+  "nav": {
+    "appName": "Prompt Library",
+    "login": "使用 GitHub 登入",
+    "logout": "登出",
+    "newPrompt": "新增 Prompt",
+    "labels": "管理標籤",
+    "language": "語言",
+    "darkMode": "切換深色模式",
+    "lightMode": "切換淺色模式",
+    "userMenu": "使用者選單"
+  },
+  "home": {
+    "searchPlaceholder": "依標題或內容搜尋 prompt…",
+    "filtersButton": "篩選",
+    "activeFilters": "已套用篩選：",
+    "clearAll": "全部清除",
+    "showingResults": "顯示 {{filtered}} / {{total}} 筆 prompt",
+    "loadFailed": "無法載入 prompt",
+    "unknownError": "未知錯誤",
+    "newPrompt": "新增 Prompt"
+  },
+  "filter": {
+    "model": "🤖 模型",
+    "type": "📁 類型",
+    "usecase": "🎯 使用情境",
+    "lang": "🌐 語言",
+    "difficulty": "📊 難度"
+  },
+  "empty": {
+    "noPrompts": "尚未建立任何 prompt",
+    "noMatching": "沒有符合條件的 prompt",
+    "createFirst": "在 repo 開一個 GitHub Issue 來新增第一筆 prompt。",
+    "tryAdjusting": "試著調整搜尋關鍵字或移除部分篩選條件。",
+    "defaultTitle": "找不到 prompt",
+    "defaultDescription": "試著調整搜尋條件或篩選條件。"
+  },
+  "prompt": {
+    "back": "返回 Library",
+    "notFound": "找不到此 prompt。",
+    "viewOnGitHub": "在 GitHub 上檢視",
+    "promptHeading": "Prompt 內容",
+    "versionHistory": "版本紀錄",
+    "versionCount_one": "{{count}} 個版本",
+    "versionCount_other": "{{count}} 個版本",
+    "createdAt": "建立於 {{date}}",
+    "updatedAt": "更新於 {{date}}",
+    "by": "by {{user}}",
+    "edit": "編輯",
+    "archive": "封存",
+    "restore": "還原",
+    "archiveConfirmTitle": "確定要封存此 prompt 嗎？",
+    "archiveConfirmBody": "將會關閉對應的 GitHub Issue 並加上 `archived` 標籤。Prompt 會從列表中隱藏，之後仍可還原。",
+    "archiveConfirm": "確定封存",
+    "archiveCancel": "取消",
+    "addVersion": "新增版本",
+    "deleteCommentConfirm": "確定刪除此版本？此動作無法復原。",
+    "save": "儲存",
+    "cancel": "取消",
+    "editor": {
+      "newTitle": "新增 Prompt",
+      "editTitle": "編輯 Prompt",
+      "fieldTitle": "標題",
+      "fieldTitlePlaceholder": "為這個 prompt 取一個清楚的名稱",
+      "fieldBody": "內容",
+      "fieldLabels": "標籤",
+      "submit": "儲存",
+      "submitting": "儲存中…",
+      "discard": "捨棄",
+      "titleRequired": "請輸入標題",
+      "titleTooLong": "標題不可超過 256 字",
+      "uploading": "上傳圖片中…",
+      "uploadFailed": "圖片上傳失敗：{{error}}"
+    }
+  },
+  "comment": {
+    "edit": "編輯",
+    "delete": "刪除",
+    "save": "儲存",
+    "cancel": "取消"
+  },
+  "label": {
+    "managePageTitle": "管理標籤",
+    "addLabel": "新增標籤",
+    "name": "名稱",
+    "color": "顏色",
+    "description": "說明",
+    "save": "儲存",
+    "delete": "刪除",
+    "deleteConfirm": "確定刪除標籤「{{name}}」？使用此標籤的 issue 仍會保留其他標籤。",
+    "createSuccess": "已建立標籤",
+    "updateSuccess": "已更新標籤",
+    "deleteSuccess": "已刪除標籤"
+  },
+  "auth": {
+    "checkingPermission": "驗證權限中…",
+    "loginRequired": "請先登入以繼續操作。",
+    "permissionDenied": "您的帳號沒有此 repo 的寫入權限。",
+    "stateMismatch": "登入流程已逾時或被竄改，請重新嘗試。",
+    "exchangeFailed": "登入失敗：{{error}}",
+    "userCancelled": "已取消登入。",
+    "tokenInvalid": "登入逾時，請重新登入。",
+    "loginCta": "使用 GitHub 登入"
+  },
+  "common": {
+    "loading": "載入中…",
+    "back": "返回",
+    "close": "關閉",
+    "confirm": "確認",
+    "cancel": "取消",
+    "ok": "確定",
+    "yes": "是",
+    "no": "否",
+    "saving": "儲存中…",
+    "deleting": "刪除中…",
+    "copy": "複製",
+    "copied": "已複製！"
+  }
+}

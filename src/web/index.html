@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src https: data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://api.github.com https://github.com https://raw.githubusercontent.com https://*.workers.dev http://localhost:8787; frame-ancestors 'none'; object-src 'none'; base-uri 'self';" />
+    <title>Prompt Library</title>
+    <meta name="description" content="A curated library of AI prompts stored as GitHub Issues" />
+    <script>
+      // Theme bootstrap (avoids dark-mode flash)
+      (function () {
+        try {
+          const theme = localStorage.getItem('pl_theme');
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (theme === 'dark' || (!theme && prefersDark)) {
+            document.documentElement.classList.add('dark');
+          }
+          document.documentElement.setAttribute(
+            'data-color-mode',
+            (theme === 'dark' || (!theme && prefersDark)) ? 'dark' : 'light',
+          );
+        } catch (e) {}
+      })();
+
+      // OAuth callback bootstrap: GitHub returns ?code=&state= at the site root
+      // because OAuth App callback URLs cannot include a hash fragment. Rewrite
+      // to the HashRouter route before React boots.
+      (function () {
+        try {
+          const search = window.location.search;
+          if (!search) return;
+          const params = new URLSearchParams(search);
+          const hasCode = params.has('code') && params.has('state');
+          const hasError = params.has('error');
+          if (!hasCode && !hasError) return;
+          const newHash = '#/auth/callback' + search;
+          const newUrl = window.location.pathname + newHash;
+          window.history.replaceState(null, '', newUrl);
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/main.tsx"></script>
+  </body>
+</html>
+

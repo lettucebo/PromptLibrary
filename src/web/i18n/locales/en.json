@@ -1,0 +1,119 @@
+{
+  "nav": {
+    "appName": "Prompt Library",
+    "login": "Login with GitHub",
+    "logout": "Logout",
+    "newPrompt": "New Prompt",
+    "labels": "Manage Labels",
+    "language": "Language",
+    "darkMode": "Switch to dark mode",
+    "lightMode": "Switch to light mode",
+    "userMenu": "User menu"
+  },
+  "home": {
+    "searchPlaceholder": "Search prompts by title or content…",
+    "filtersButton": "Filters",
+    "activeFilters": "Active filters:",
+    "clearAll": "Clear all",
+    "showingResults": "Showing {{filtered}} of {{total}} {{count, plural, one {prompt} other {prompts}}}",
+    "loadFailed": "Failed to load prompts",
+    "unknownError": "Unknown error",
+    "newPrompt": "New Prompt"
+  },
+  "filter": {
+    "model": "🤖 Model",
+    "type": "📁 Type",
+    "usecase": "🎯 Use Case",
+    "lang": "🌐 Language",
+    "difficulty": "📊 Difficulty"
+  },
+  "empty": {
+    "noPrompts": "No prompts yet",
+    "noMatching": "No matching prompts",
+    "createFirst": "Create a GitHub Issue in this repo to add your first prompt.",
+    "tryAdjusting": "Try adjusting your search query or removing some filters.",
+    "defaultTitle": "No prompts found",
+    "defaultDescription": "Try adjusting your search or filters."
+  },
+  "prompt": {
+    "back": "Back to Library",
+    "notFound": "Prompt not found.",
+    "viewOnGitHub": "View on GitHub",
+    "promptHeading": "Prompt",
+    "versionHistory": "Version History",
+    "versionCount_one": "{{count}} version",
+    "versionCount_other": "{{count}} versions",
+    "createdAt": "Created {{date}}",
+    "updatedAt": "Updated {{date}}",
+    "by": "by {{user}}",
+    "edit": "Edit",
+    "archive": "Archive",
+    "restore": "Restore",
+    "archiveConfirmTitle": "Archive this prompt?",
+    "archiveConfirmBody": "This will close the GitHub issue and add the `archived` label. The prompt will be hidden from the library but can be restored later.",
+    "archiveConfirm": "Yes, archive",
+    "archiveCancel": "Cancel",
+    "addVersion": "Add new version",
+    "deleteCommentConfirm": "Delete this version? This cannot be undone.",
+    "save": "Save",
+    "cancel": "Cancel",
+    "editor": {
+      "newTitle": "New Prompt",
+      "editTitle": "Edit Prompt",
+      "fieldTitle": "Title",
+      "fieldTitlePlaceholder": "Give your prompt a clear name",
+      "fieldBody": "Content",
+      "fieldLabels": "Labels",
+      "submit": "Save",
+      "submitting": "Saving…",
+      "discard": "Discard",
+      "titleRequired": "Title is required",
+      "titleTooLong": "Title must be 256 characters or fewer",
+      "uploading": "Uploading image…",
+      "uploadFailed": "Image upload failed: {{error}}"
+    }
+  },
+  "comment": {
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "label": {
+    "managePageTitle": "Manage Labels",
+    "addLabel": "Add label",
+    "name": "Name",
+    "color": "Color",
+    "description": "Description",
+    "save": "Save",
+    "delete": "Delete",
+    "deleteConfirm": "Delete label \"{{name}}\"? Issues using it will keep their other labels.",
+    "createSuccess": "Label created",
+    "updateSuccess": "Label updated",
+    "deleteSuccess": "Label deleted"
+  },
+  "auth": {
+    "checkingPermission": "Checking permission…",
+    "loginRequired": "Please sign in to continue.",
+    "permissionDenied": "Your account does not have write access to this repository.",
+    "stateMismatch": "Login session expired or tampered. Please try again.",
+    "exchangeFailed": "Failed to complete sign-in: {{error}}",
+    "userCancelled": "Sign-in cancelled.",
+    "tokenInvalid": "Your session has expired. Please sign in again.",
+    "loginCta": "Sign in with GitHub"
+  },
+  "common": {
+    "loading": "Loading…",
+    "back": "Back",
+    "close": "Close",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "ok": "OK",
+    "yes": "Yes",
+    "no": "No",
+    "saving": "Saving…",
+    "deleting": "Deleting…",
+    "copy": "Copy",
+    "copied": "Copied!"
+  }
+}

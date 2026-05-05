@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "promptlibrary-auth",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-05-01",
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "vars": {
+    "OWNER": "lettucebo",
+    "REPO": "PromptLibrary",
+    "GITHUB_CLIENT_ID": "REPLACE_ME",
+    "ALLOWED_ORIGIN": "https://lettucebo.github.io"
+  }
+}
