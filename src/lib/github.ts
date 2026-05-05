@@ -1,20 +1,9 @@
 import { Octokit } from '@octokit/rest';
 import { config } from '../config';
-import type { Label, ParsedLabel, Prompt, PromptComment, GitHubUser } from '../types';
+import type { Label, ParsedLabel, Prompt, PromptComment } from '../types';
 
 export function createOctokit(token: string): Octokit {
   return new Octokit({ auth: token });
-}
-
-export async function verifyToken(token: string): Promise<GitHubUser> {
-  const octokit = createOctokit(token);
-  const { data } = await octokit.rest.users.getAuthenticated();
-  return {
-    login: data.login,
-    name: data.name,
-    avatar_url: data.avatar_url,
-    html_url: data.html_url,
-  };
 }
 
 export function parseLabel(label: Label): ParsedLabel {
