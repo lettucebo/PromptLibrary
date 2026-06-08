@@ -6,7 +6,7 @@ import { useToast } from '../contexts/ToastContext';
 import { errorMessageKey } from '../lib/errors';
 import { config } from '../config';
 
-const CATEGORIES = [...Object.keys(config.labelPrefixes), 'other'] as const;
+const CATEGORIES = Object.keys(config.labelPrefixes) as Array<keyof typeof config.labelPrefixes>;
 
 function randomColor(): string {
   return Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
@@ -25,13 +25,13 @@ export default function InlineLabelCreator({ onCreated }: InlineLabelCreatorProp
 
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
-  const [category, setCategory] = useState<string>('other');
+  const [category, setCategory] = useState<keyof typeof config.labelPrefixes>('model');
   const [color, setColor] = useState(randomColor());
   const [error, setError] = useState<string | null>(null);
 
   const reset = () => {
     setName('');
-    setCategory('other');
+    setCategory('model');
     setColor(randomColor());
     setError(null);
   };
@@ -43,8 +43,8 @@ export default function InlineLabelCreator({ onCreated }: InlineLabelCreatorProp
       setError(t('label.name'));
       return;
     }
-    const prefix = config.labelPrefixes[category as keyof typeof config.labelPrefixes];
-    const fullName = category === 'other' || !prefix ? trimmed : `${prefix}${trimmed}`;
+    const prefix = config.labelPrefixes[category];
+    const fullName = `${prefix}${trimmed}`;
     try {
       await createMut.mutateAsync({ name: fullName, color });
       toast.success('toast.labelCreated');
@@ -73,12 +73,12 @@ export default function InlineLabelCreator({ onCreated }: InlineLabelCreatorProp
     <div className="mt-3 rounded-lg border border-gray-200 dark:border-gray-700 p-3 flex flex-wrap items-center gap-2">
       <select
         value={category}
-        onChange={(e) => setCategory(e.target.value)}
+        onChange={(e) => setCategory(e.target.value as keyof typeof config.labelPrefixes)}
         className="px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
       >
         {CATEGORIES.map((cat) => (
           <option key={cat} value={cat}>
-            {cat === 'other' ? t('label.other') : t(`filter.${cat}`)}
+            {t(`filter.${cat}`)}
           </option>
         ))}
       </select>

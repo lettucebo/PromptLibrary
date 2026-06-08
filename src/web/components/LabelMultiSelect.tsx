@@ -8,13 +8,12 @@ interface LabelMultiSelectProps {
   onChange: (selected: string[]) => void;
 }
 
-const CATEGORY_ORDER: Array<keyof typeof config.labelPrefixes | 'other'> = [
+const CATEGORY_ORDER: Array<keyof typeof config.labelPrefixes> = [
   'model',
   'type',
   'usecase',
   'lang',
   'difficulty',
-  'other',
 ];
 
 export default function LabelMultiSelect({ selected, onChange }: LabelMultiSelectProps) {
@@ -25,7 +24,7 @@ export default function LabelMultiSelect({ selected, onChange }: LabelMultiSelec
   for (const lbl of labels) {
     const parsed = parseLabel(lbl);
     const cat = parsed.category;
-    if (cat === 'other' && lbl.name === config.archivedLabel) continue;
+    if (cat === 'other') continue; // only show prefixed categories
     const arr = grouped.get(cat) ?? [];
     arr.push({ name: lbl.name, color: lbl.color });
     grouped.set(cat, arr);
@@ -40,7 +39,7 @@ export default function LabelMultiSelect({ selected, onChange }: LabelMultiSelec
       {CATEGORY_ORDER.map((cat) => {
         const items = grouped.get(cat) ?? [];
         if (items.length === 0) return null;
-        const heading = cat === 'other' ? t('label.name') : t(`filter.${cat}`);
+        const heading = t(`filter.${cat}`);
         return (
           <div key={cat}>
             <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{heading}</p>
