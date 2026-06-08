@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ToastProvider } from './contexts/ToastContext';
 import { AuthProvider } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -28,61 +29,63 @@ function LazyFallback() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <HashRouter>
-          <Routes>
-            <Route element={<Layout />}>
-              <Route index element={<HomePage />} />
-              <Route
-                path="prompt/:id"
-                element={
-                  <Suspense fallback={<LazyFallback />}>
-                    <PromptDetailPage />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="prompt/new"
-                element={
-                  <Suspense fallback={<LazyFallback />}>
-                    <AuthGuard>
-                      <PromptEditorPage />
-                    </AuthGuard>
-                  </Suspense>
-                }
-              />
-              <Route
-                path="prompt/:id/edit"
-                element={
-                  <Suspense fallback={<LazyFallback />}>
-                    <AuthGuard>
-                      <PromptEditorPage />
-                    </AuthGuard>
-                  </Suspense>
-                }
-              />
-              <Route
-                path="admin/labels"
-                element={
-                  <Suspense fallback={<LazyFallback />}>
-                    <AuthGuard>
-                      <LabelsAdminPage />
-                    </AuthGuard>
-                  </Suspense>
-                }
-              />
-              <Route
-                path="auth/callback"
-                element={
-                  <Suspense fallback={<LazyFallback />}>
-                    <AuthCallbackPage />
-                  </Suspense>
-                }
-              />
-            </Route>
-          </Routes>
-        </HashRouter>
-      </AuthProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <HashRouter>
+            <Routes>
+              <Route element={<Layout />}>
+                <Route index element={<HomePage />} />
+                <Route
+                  path="prompt/:id"
+                  element={
+                    <Suspense fallback={<LazyFallback />}>
+                      <PromptDetailPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="prompt/new"
+                  element={
+                    <Suspense fallback={<LazyFallback />}>
+                      <AuthGuard>
+                        <PromptEditorPage />
+                      </AuthGuard>
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="prompt/:id/edit"
+                  element={
+                    <Suspense fallback={<LazyFallback />}>
+                      <AuthGuard>
+                        <PromptEditorPage />
+                      </AuthGuard>
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="admin/labels"
+                  element={
+                    <Suspense fallback={<LazyFallback />}>
+                      <AuthGuard>
+                        <LabelsAdminPage />
+                      </AuthGuard>
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="auth/callback"
+                  element={
+                    <Suspense fallback={<LazyFallback />}>
+                      <AuthCallbackPage />
+                    </Suspense>
+                  }
+                />
+              </Route>
+            </Routes>
+          </HashRouter>
+        </AuthProvider>
+      </ToastProvider>
     </QueryClientProvider>
   );
 }

@@ -1,9 +1,19 @@
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Copy, Check, Calendar, ExternalLink, Pencil, Archive, ArchiveRestore, Plus, Trash2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  Calendar,
+  ExternalLink,
+  Pencil,
+  Archive,
+  ArchiveRestore,
+  Plus,
+  Trash2,
+  Share2,
+  GitCompare,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import { diffLines } from 'diff';
 import {
   useArchivePrompt,
   useCreateComment,
@@ -14,10 +24,16 @@ import {
   useUpdateComment,
 } from '../hooks/usePrompts';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import { config } from '../config';
+import { copyText } from '../lib/clipboard';
+import { errorMessageKey } from '../lib/errors';
 import LabelBadge from '../components/LabelBadge';
 import LoadingSpinner from '../components/LoadingSpinner';
 import CommentEditor from '../components/CommentEditor';
+import CopyButton from '../components/CopyButton';
+import ConfirmDialog from '../components/ConfirmDialog';
+import Markdown from '../components/Markdown';
 import type { PromptComment } from '../types';
 
 function useFormatDate() {
@@ -32,69 +48,116 @@ function useFormatDate() {
     });
 }
 
-function CopyButton({ text, className = '' }: { text: string; className?: string }) {
-  const { t } = useTranslation();
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
+function VersionBadge({ version }: { version: number }) {
   return (
-    <button
-      onClick={handleCopy}
-      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-        copied
-          ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-      } ${className}`}
-    >
-      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-      {copied ? t('common.copied') : t('common.copy')}
-    </button>
+    <span className="inline-flex items-center justify-center min-w-[1.75rem] h-6 px-1.5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold">
+      v{version}
+    </span>
   );
 }
 
-function CommentCard({ comment, issueNumber }: { comment: PromptComment; issueNumber: number }) {
+function VersionDiff({ oldText, newText }: { oldText: string; newText: string }) {
+  const parts = diffLines(oldText, newText);
+  const rows: { type: 'add' | 'del' | 'ctx'; text: string }[] = [];
+  for (const part of parts) {
+    const type = part.added ? 'add' : part.removed ? 'del' : 'ctx';
+    const lines = part.value.split('\n');
+    if (lines[lines.length - 1] === '') lines.pop();
+    for (const line of lines) rows.push({ type, text: line });
+  }
+  return (
+    <pre className="text-xs leading-5 rounded-lg overflow-x-auto border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-2">
+      {rows.map((r, i) => (
+        <div
+          key={i}
+          className={
+            r.type === 'add'
+              ? 'bg-green-100/70 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+              : r.type === 'del'
+                ? 'bg-red-100/70 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                : 'text-gray-600 dark:text-gray-400'
+          }
+        >
+          <span className="select-none inline-block w-4 text-center opacity-60">
+            {r.type === 'add' ? '+' : r.type === 'del' ? '-' : ' '}
+          </span>
+          <span className="whitespace-pre-wrap break-words">{r.text || ' '}</span>
+        </div>
+      ))}
+    </pre>
+  );
+}
+
+function CommentCard({
+  comment,
+  issueNumber,
+  version,
+  previousText,
+}: {
+  comment: PromptComment;
+  issueNumber: number;
+  version: number;
+  previousText: string;
+}) {
   const { t } = useTranslation();
   const formatDate = useFormatDate();
   const { session } = useAuth();
+  const toast = useToast();
   const [editing, setEditing] = useState(false);
+  const [showDiff, setShowDiff] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const updateMut = useUpdateComment(issueNumber);
   const deleteMut = useDeleteComment(issueNumber);
   const isAuthor = !!session && !!comment.user && session.user.login === comment.user.login;
 
   const onSave = async (body: string) => {
-    await updateMut.mutateAsync({ commentId: comment.id, body });
-    setEditing(false);
+    try {
+      await updateMut.mutateAsync({ commentId: comment.id, body });
+      setEditing(false);
+      toast.success('toast.versionUpdated');
+    } catch (e) {
+      toast.error(errorMessageKey(e));
+    }
   };
+
   const onDelete = () => {
-    if (!window.confirm(t('prompt.deleteCommentConfirm'))) return;
-    deleteMut.mutate(comment.id);
+    deleteMut.mutate(comment.id, {
+      onSuccess: () => {
+        setConfirmDelete(false);
+        toast.success('toast.versionDeleted');
+      },
+      onError: (e) => toast.error(errorMessageKey(e)),
+    });
   };
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between mb-4 gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <VersionBadge version={version} />
           {comment.user && (
-            <img
-              src={comment.user.avatar_url}
-              alt={comment.user.login}
-              className="h-7 w-7 rounded-full"
-            />
+            <img src={comment.user.avatar_url} alt={comment.user.login} className="h-7 w-7 rounded-full" />
           )}
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            {comment.user?.login ?? 'Unknown'}
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
+            {comment.user?.login ?? t('comment.unknownAuthor')}
           </span>
-          <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
+          <span className="hidden sm:flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
             <Calendar className="h-3 w-3" />
             {formatDate(comment.created_at)}
           </span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowDiff((v) => !v)}
+            className={`p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 ${
+              showDiff ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400'
+            }`}
+            title={t('prompt.compareWithPrevious')}
+            aria-label={t('prompt.compareWithPrevious')}
+          >
+            <GitCompare className="h-3.5 w-3.5" />
+          </button>
           {isAuthor && !editing && (
             <>
               <button
@@ -108,7 +171,7 @@ function CommentCard({ comment, issueNumber }: { comment: PromptComment; issueNu
               </button>
               <button
                 type="button"
-                onClick={onDelete}
+                onClick={() => setConfirmDelete(true)}
                 disabled={deleteMut.isPending}
                 className="p-1.5 rounded-md text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
                 title={t('comment.delete')}
@@ -129,11 +192,22 @@ function CommentCard({ comment, issueNumber }: { comment: PromptComment; issueNu
           onSubmit={onSave}
           onCancel={() => setEditing(false)}
         />
+      ) : showDiff ? (
+        <VersionDiff oldText={previousText} newText={comment.body} />
       ) : (
-        <div className="prose prose-sm dark:prose-invert max-w-none">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{comment.body}</ReactMarkdown>
-        </div>
+        <Markdown>{comment.body}</Markdown>
       )}
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title={t('prompt.deleteCommentConfirmTitle')}
+        body={t('prompt.deleteCommentConfirm')}
+        confirmLabel={t('comment.delete')}
+        tone="danger"
+        isPending={deleteMut.isPending}
+        onConfirm={onDelete}
+        onCancel={() => setConfirmDelete(false)}
+      />
     </div>
   );
 }
@@ -141,6 +215,7 @@ function CommentCard({ comment, issueNumber }: { comment: PromptComment; issueNu
 export default function PromptDetailPage() {
   const { t } = useTranslation();
   const formatDate = useFormatDate();
+  const toast = useToast();
   const { id } = useParams<{ id: string }>();
   const issueNumber = parseInt(id ?? '0', 10);
 
@@ -149,15 +224,31 @@ export default function PromptDetailPage() {
   const { data: comments = [], isLoading: loadingComments } = usePromptComments(issueNumber);
   const archiveMut = useArchivePrompt();
   const restoreMut = useRestorePrompt();
+  const [confirmArchive, setConfirmArchive] = useState(false);
 
   const isArchived = prompt?.labels.some((l) => l.name === config.archivedLabel) ?? false;
 
   const handleArchive = () => {
-    if (!window.confirm(`${t('prompt.archiveConfirmTitle')}\n\n${t('prompt.archiveConfirmBody')}`)) return;
-    archiveMut.mutate(issueNumber);
+    archiveMut.mutate(issueNumber, {
+      onSuccess: () => {
+        setConfirmArchive(false);
+        toast.success('toast.archived');
+      },
+      onError: (e) => toast.error(errorMessageKey(e)),
+    });
   };
   const handleRestore = () => {
-    restoreMut.mutate(issueNumber);
+    restoreMut.mutate(issueNumber, {
+      onSuccess: () => toast.success('toast.restored'),
+      onError: (e) => toast.error(errorMessageKey(e)),
+    });
+  };
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}${window.location.pathname}#/prompt/${issueNumber}`;
+    const ok = await copyText(url);
+    if (ok) toast.success('toast.linkCopied');
+    else toast.error('errors.copyFailed');
   };
 
   if (loadingPrompt) return <LoadingSpinner className="py-20" />;
@@ -166,8 +257,9 @@ export default function PromptDetailPage() {
     return (
       <div className="text-center py-20">
         <p className="text-gray-500 dark:text-gray-400">{t('prompt.notFound')}</p>
-        <Link to="/" className="text-indigo-600 dark:text-indigo-400 hover:underline text-sm mt-2 inline-block">
-          ← {t('prompt.back')}
+        <Link to="/" className="text-indigo-600 dark:text-indigo-400 hover:underline text-sm mt-2 inline-flex items-center gap-1">
+          <ArrowLeft className="h-4 w-4" />
+          {t('prompt.back')}
         </Link>
       </div>
     );
@@ -183,11 +275,29 @@ export default function PromptDetailPage() {
         {t('prompt.back')}
       </Link>
 
+      {isArchived && (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 px-4 py-3">
+          <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-300">
+            <Archive className="h-4 w-4 flex-shrink-0" />
+            <span>{t('prompt.archivedBanner')}</span>
+          </div>
+          {isAuthenticated && (
+            <button
+              type="button"
+              onClick={handleRestore}
+              disabled={restoreMut.isPending}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50"
+            >
+              <ArchiveRestore className="h-4 w-4" />
+              {t('prompt.restore')}
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <div className="flex items-start justify-between gap-4 mb-4">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">
-            {prompt.title}
-          </h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">{prompt.title}</h1>
           <div className="flex-shrink-0 flex items-center gap-1">
             {isAuthenticated && (
               <>
@@ -213,7 +323,7 @@ export default function PromptDetailPage() {
                 ) : (
                   <button
                     type="button"
-                    onClick={handleArchive}
+                    onClick={() => setConfirmArchive(true)}
                     disabled={archiveMut.isPending}
                     className="p-2 rounded-lg text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
                     title={t('prompt.archive')}
@@ -224,6 +334,15 @@ export default function PromptDetailPage() {
                 )}
               </>
             )}
+            <button
+              type="button"
+              onClick={handleShare}
+              className="p-2 rounded-lg text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              title={t('prompt.share')}
+              aria-label={t('prompt.share')}
+            >
+              <Share2 className="h-4 w-4" />
+            </button>
             <a
               href={prompt.html_url}
               target="_blank"
@@ -245,7 +364,7 @@ export default function PromptDetailPage() {
           </div>
         )}
 
-        <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500">
+        <div className="flex flex-wrap items-center gap-4 text-xs text-gray-400 dark:text-gray-500">
           <span className="flex items-center gap-1">
             <Calendar className="h-3.5 w-3.5" />
             {t('prompt.createdAt', { date: formatDate(prompt.created_at) })}
@@ -256,25 +375,22 @@ export default function PromptDetailPage() {
               {t('prompt.updatedAt', { date: formatDate(prompt.updated_at) })}
             </span>
           )}
-          {prompt.user && (
-            <span className="flex items-center gap-1">
-              {t('prompt.by', { user: prompt.user.login })}
-            </span>
-          )}
+          {prompt.user && <span className="flex items-center gap-1">{t('prompt.by', { user: prompt.user.login })}</span>}
         </div>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-            {t('prompt.promptHeading')}
-          </h2>
+        <div className="flex items-center justify-between mb-4 gap-2">
+          <div className="flex items-center gap-2">
+            <VersionBadge version={1} />
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+              {t('prompt.promptHeading')}
+            </h2>
+          </div>
           <CopyButton text={prompt.body} />
         </div>
 
-        <div className="prose prose-sm dark:prose-invert max-w-none">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{prompt.body}</ReactMarkdown>
-        </div>
+        <Markdown>{prompt.body}</Markdown>
       </div>
 
       {(loadingComments || comments.length > 0) && (
@@ -292,28 +408,37 @@ export default function PromptDetailPage() {
 
           <div className="space-y-4">
             {comments.map((comment, idx) => (
-              <div key={comment.id} className="relative">
-                <div className="absolute -left-3 top-5 flex items-center justify-center w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold hidden sm:flex">
-                  v{idx + 2}
-                </div>
-                <div className="sm:ml-6">
-                  <CommentCard comment={comment} issueNumber={issueNumber} />
-                </div>
-              </div>
+              <CommentCard
+                key={comment.id}
+                comment={comment}
+                issueNumber={issueNumber}
+                version={idx + 2}
+                previousText={idx === 0 ? prompt.body : comments[idx - 1].body}
+              />
             ))}
           </div>
         </div>
       )}
 
-      {isAuthenticated && (
-        <AddVersionSection issueNumber={issueNumber} />
-      )}
+      {isAuthenticated && <AddVersionSection issueNumber={issueNumber} />}
+
+      <ConfirmDialog
+        open={confirmArchive}
+        title={t('prompt.archiveConfirmTitle')}
+        body={t('prompt.archiveConfirmBody')}
+        confirmLabel={t('prompt.archiveConfirm')}
+        tone="danger"
+        isPending={archiveMut.isPending}
+        onConfirm={handleArchive}
+        onCancel={() => setConfirmArchive(false)}
+      />
     </div>
   );
 }
 
 function AddVersionSection({ issueNumber }: { issueNumber: number }) {
   const { t } = useTranslation();
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const createMut = useCreateComment(issueNumber);
 
@@ -337,8 +462,13 @@ function AddVersionSection({ issueNumber }: { issueNumber: number }) {
       <CommentEditor
         isPending={createMut.isPending}
         onSubmit={async (body) => {
-          await createMut.mutateAsync(body);
-          setOpen(false);
+          try {
+            await createMut.mutateAsync(body);
+            setOpen(false);
+            toast.success('toast.versionAdded');
+          } catch (e) {
+            toast.error(errorMessageKey(e));
+          }
         }}
         onCancel={() => setOpen(false)}
       />

@@ -20,11 +20,11 @@
 ## Authentication
 
 - OAuth App registers `https://lettucebo.github.io/PromptLibrary/` as the callback URL (root, not a hash route).
-- An inline script in [index.html](../index.html) detects `?code=&state=` and rewrites the URL to `#/auth/callback?...` **before React boots**, so HashRouter sees the right route.
+- An inline script in [src/web/index.html](../src/web/index.html) detects `?code=&state=` and rewrites the URL to `#/auth/callback?...` **before React boots**, so HashRouter sees the right route.
 - The Cloudflare Worker (`POST /auth/exchange`) holds the OAuth client secret, exchanges the `code`, then immediately calls `GET /repos/{owner}/{repo}/collaborators/{user}/permission`. Only `admin` / `maintain` / `write` permissions get a token back; others get 403.
 - The frontend stores `{token, user, ...}` in `localStorage` and calls the GitHub API directly with that token. The Worker never proxies CRUD.
 - Logout calls `POST /auth/logout` which revokes the token via `DELETE /applications/{client_id}/token`.
-- `src/lib/github.ts` registers a global Octokit `error` hook: on 401, it triggers `onUnauthorized` → `clearAuth()` + toast, forcing re-login.
+- `src/web/lib/github.ts` registers a global Octokit `error` hook: on 401, it triggers `onUnauthorized` → `clearAuth()` + toast, forcing re-login.
 
 ## Cloudflare Worker
 
@@ -38,7 +38,7 @@ Lives in `src/worker/` with its own `package.json`, `wrangler.jsonc`, `tsconfig.
 
 ## i18n
 
-- Init in `src/i18n/index.ts`. Resources at `src/i18n/locales/{zh-TW,en}.json`.
+- Init in `src/web/i18n/index.ts`. Resources at `src/web/i18n/locales/{zh-TW,en}.json`.
 - Key namespaces: `nav.*`, `home.*`, `filter.*`, `empty.*`, `prompt.*`, `prompt.editor.*`, `comment.*`, `label.*`, `auth.*`, `common.*`.
 - **All user-facing text MUST go through `useTranslation()`. Never hardcode Chinese or English in JSX.** When adding strings, add them to **both** locale files.
 - Language detector reads `localStorage` key `pl_lang`; fallback `zh-TW`.
@@ -46,7 +46,7 @@ Lives in `src/worker/` with its own `package.json`, `wrangler.jsonc`, `tsconfig.
 
 ## Image Upload
 
-The MDEditor wrapper (`src/components/MarkdownEditor.tsx`) intercepts `onPaste` and `onDrop`. Image files are uploaded via `useUploadAttachment()` → `uploadAttachment()` (in `src/lib/github.ts`), which calls the Contents API to commit the file to `.attachments/<yyyymmdd>/<uuid>.<ext>` on the default branch. The resulting `raw.githubusercontent.com` URL is inserted at the editor's value, replacing a temporary `![uploading...](pending-...)` placeholder.
+The MDEditor wrapper (`src/web/components/MarkdownEditor.tsx`) intercepts `onPaste` and `onDrop`. Image files are uploaded via `useUploadAttachment()` → `uploadAttachment()` (in `src/web/lib/github.ts`), which calls the Contents API to commit the file to `.attachments/<yyyymmdd>/<uuid>.<ext>` on the default branch. The resulting `raw.githubusercontent.com` URL is inserted at the editor's value, replacing a temporary `![uploading...](pending-...)` placeholder.
 
 GitHub's user-attachment endpoint is **not** used (no public OAuth API).
 
@@ -70,13 +70,13 @@ GitHub's user-attachment endpoint is **not** used (no public OAuth API).
 |---------|---------------|
 | Prompt | Open Issue without `meta` and `archived` labels |
 | Prompt body | Issue body (Markdown) |
-| Prompt version | Issue comment (renders as v2, v3, …) |
+| Prompt version | Issue comment (rendered as v2, v3, …; original body is v1, with inline diff vs the previous version) |
 | Categories | Issue labels with prefixes (`model:`, `type:`, `usecase:`, `lang:`, `difficulty:`) |
 | Soft delete | Apply `archived` label + close issue |
 | Restore | Remove `archived` label + reopen |
 | Image attachment | File at `.attachments/<yyyymmdd>/<uuid>.<ext>` on the default branch |
 
-`fetchPrompts` excludes both `meta` and `archived` labels.
+The home list uses the **GitHub Search API** (`searchPrompts` in `lib/github.ts` → `useSearchPrompts` infinite query) for server-side text search, sort, and pagination; its query excludes `meta` and `archived`. `fetchPrompts` (REST, fetch-all) is retained for non-search callers. Note: the Search API ANDs multiple `label:` qualifiers, so selecting several labels in one category requires matching all of them.
 
 Issue title constraint: ≤ 256 characters (validated in the editor).
 
@@ -154,15 +154,20 @@ src/
 # SPA
 pnpm install            # one-time
 pnpm dev                # http://localhost:5173
-pnpm build              # tsc + vite build
+pnpm build              # tsc -p src/web/tsconfig.json && vite build
+pnpm typecheck          # tsc --noEmit (no separate lint step exists)
 pnpm preview
 
 # Worker
-pnpm -C src/worker install  # one-time
-pnpm -C src/worker dev      # http://localhost:8787
+pnpm -C src/worker install     # one-time
+pnpm -C src/worker dev         # http://localhost:8787
+pnpm -C src/worker typecheck   # tsc --noEmit
+pnpm -C src/worker cf-typegen  # regenerate worker-configuration.d.ts from wrangler.jsonc
 pnpm -C src/worker deploy
 pnpm -C src/worker tail
 ```
+
+There is **no test runner or linter** configured in either package. `typecheck` (TypeScript `--noEmit`) is the only static check; run it after edits to validate. All scripts run `vite`/`tsc` against `src/web/...` configs (see `package.json`).
 
 ## Deployment
 
@@ -174,9 +179,12 @@ pnpm -C src/worker tail
 - Functional React components with TypeScript; default exports for components/pages.
 - **All UI text via `useTranslation()`**. Add keys to both `zh-TW.json` and `en.json`.
 - Tailwind utility classes only; no custom CSS beyond base layer.
-- All GitHub API access goes through `src/lib/github.ts`. Use `getOctokit(token?)`; never `new Octokit()` ad hoc.
-- All write operations go through React Query mutation hooks in `src/hooks/usePrompts.ts` or `useLabels.ts`. Mutations must `invalidateQueries` for affected lists.
+- All GitHub API access goes through `src/web/lib/github.ts`. Use `getOctokit(token?)`; never `new Octokit()` ad hoc.
+- All write operations go through React Query mutation hooks in `src/web/hooks/usePrompts.ts` or `src/web/hooks/useLabels.ts`. Mutations must `invalidateQueries` for affected lists.
 - Consume the Markdown editor only via `<MarkdownEditor />` wrapper, not by importing `@uiw/react-md-editor` directly. This isolates the underlying library.
+- Read-only Markdown renders via the shared `<Markdown>` component (never `ReactMarkdown` directly) so `rehype-sanitize` is always applied.
+- User feedback via `useToast()` (`contexts/ToastContext.tsx`); `<ToastViewport/>` is mounted in `Layout`. Map errors to friendly keys with `errorMessageKey()` (`lib/errors.ts`). Use `<ConfirmDialog>` / `<Modal>` instead of `window.confirm`/`alert`. Copy via the shared `<CopyButton>` / `copyText()` (`lib/clipboard.ts`).
+- Home list state (search, sort, filters) lives in the URL via `useSearchParams` (HashRouter-compatible) so views are shareable/bookmarkable.
 - Write-protected pages (`PromptEditorPage`, `LabelsAdminPage`) and the `AuthCallbackPage` must be `React.lazy`-loaded; wrap with `Suspense` and use `<AuthGuard>` for write routes.
 - 401 from GitHub → never re-throw to UI; let `setUnauthorizedHandler` handle it (it auto-clears auth and shows the toast).
 
@@ -184,19 +192,28 @@ pnpm -C src/worker tail
 
 - **CSP** — strict `<meta http-equiv="Content-Security-Policy">` in `index.html`:
   - `default-src 'self'`
-  - `img-src https: data:` (allows `raw.githubusercontent.com` and external image hosts)
+  - `img-src 'self' https://*.githubusercontent.com data:` (favicon/app assets + avatars & `raw.githubusercontent.com`; external image hosts are intentionally disallowed)
   - `style-src 'self' 'unsafe-inline'` (Tailwind + MDEditor inline SVG styles)
   - `script-src 'self' 'unsafe-inline'` (theme + OAuth bootstrap inline scripts)
   - `connect-src` allow-list: `api.github.com`, `github.com`, `raw.githubusercontent.com`, Worker URL
   - `frame-ancestors 'none'`, `object-src 'none'`, `base-uri 'self'`
-- **XSS** — `<MarkdownEditor>` previewOptions and read-only renders use `rehype-sanitize`.
+- **XSS** — the shared `<Markdown>` component (`components/Markdown.tsx`) and `<MarkdownEditor>` previewOptions both apply `rehype-sanitize`; all read-only renders go through `<Markdown>`.
 - **CSRF** — OAuth `state` is `crypto.getRandomValues`-derived, stored in `sessionStorage`, validated in `AuthCallbackPage`.
 - **Token storage** — `localStorage`. Mitigation: strict CSP. Token is a `public_repo`-scoped OAuth token (no admin powers).
 - **CORS** — Worker only allows configured `ALLOWED_ORIGIN`(s); preflight rejects others.
+
+## MCP Servers
+
+Configured in [.mcp.json](../.mcp.json) at the repo root (relevant to this React SPA + Cloudflare Worker stack):
+
+- `microsoft/playwright-mcp` & `io.github.ChromeDevTools/chrome-devtools-mcp` — browser automation / debugging the deployed SPA.
+- `cloudflare-doc` & `cloudflare-api` — Cloudflare docs lookup and API access for the auth Worker.
+- `io.github.upstash/context7` — up-to-date library docs (needs `CONTEXT7_API_KEY` input).
+- `microsoft-learn` — Microsoft Learn documentation.
 
 ## Limitations (intentional, documented in README)
 
 - Last-write-wins; no concurrent-edit detection
 - Image attachments are not auto-pruned
 - No hard delete (Issues are soft-deleted via `archived` label)
-- No rate-limit indicator in UI
+- Rate limits surface as a friendly message (`errors.rateLimited`); the Search API limits are lower (≈10/min anon, 30/min auth)

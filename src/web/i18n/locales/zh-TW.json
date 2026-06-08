@@ -18,7 +18,16 @@
     "showingResults": "顯示 {{filtered}} / {{total}} 筆 prompt",
     "loadFailed": "無法載入 prompt",
     "unknownError": "未知錯誤",
-    "newPrompt": "新增 Prompt"
+    "newPrompt": "新增 Prompt",
+    "sortLabel": "排序方式",
+    "sort": {
+      "newest": "最新建立",
+      "oldest": "最早建立",
+      "updated": "最近更新",
+      "versions": "版本最多"
+    },
+    "totalResults": "共 {{count}} 筆 prompt",
+    "endOfResults": "已顯示全部結果"
   },
   "filter": {
     "model": "🤖 模型",
@@ -31,6 +40,7 @@
     "noPrompts": "尚未建立任何 prompt",
     "noMatching": "沒有符合條件的 prompt",
     "createFirst": "在 repo 開一個 GitHub Issue 來新增第一筆 prompt。",
+    "createFirstAuthed": "建立你的第一筆 prompt 吧！",
     "tryAdjusting": "試著調整搜尋關鍵字或移除部分篩選條件。",
     "defaultTitle": "找不到 prompt",
     "defaultDescription": "試著調整搜尋條件或篩選條件。"
@@ -39,6 +49,7 @@
     "back": "返回 Library",
     "notFound": "找不到此 prompt。",
     "viewOnGitHub": "在 GitHub 上檢視",
+    "share": "複製分享連結",
     "promptHeading": "Prompt 內容",
     "versionHistory": "版本紀錄",
     "versionCount_one": "{{count}} 個版本",
@@ -49,11 +60,14 @@
     "edit": "編輯",
     "archive": "封存",
     "restore": "還原",
+    "archivedBanner": "此 prompt 已封存，不會顯示在列表中。",
+    "compareWithPrevious": "與前一版比較",
     "archiveConfirmTitle": "確定要封存此 prompt 嗎？",
     "archiveConfirmBody": "將會關閉對應的 GitHub Issue 並加上 `archived` 標籤。Prompt 會從列表中隱藏，之後仍可還原。",
     "archiveConfirm": "確定封存",
     "archiveCancel": "取消",
     "addVersion": "新增版本",
+    "deleteCommentConfirmTitle": "刪除版本",
     "deleteCommentConfirm": "確定刪除此版本？此動作無法復原。",
     "save": "儲存",
     "cancel": "取消",
@@ -70,19 +84,30 @@
       "titleRequired": "請輸入標題",
       "titleTooLong": "標題不可超過 256 字",
       "uploading": "上傳圖片中…",
-      "uploadFailed": "圖片上傳失敗：{{error}}"
+      "uploadFailed": "圖片上傳失敗：{{error}}",
+      "uploadTypeError": "僅支援 PNG / JPEG / GIF / WebP 圖片。",
+      "uploadSizeError": "圖片大小不可超過 {{max}}MB。",
+      "draftFound": "發現未儲存的草稿。",
+      "restoreDraft": "還原草稿",
+      "discardDraft": "捨棄草稿",
+      "unsavedTitle": "尚未儲存變更",
+      "unsavedBody": "你有未儲存的變更，確定要離開嗎？",
+      "leave": "離開",
+      "stay": "留在此頁"
     }
   },
   "comment": {
     "edit": "編輯",
     "delete": "刪除",
     "save": "儲存",
-    "cancel": "取消"
+    "cancel": "取消",
+    "unknownAuthor": "未知使用者"
   },
   "label": {
     "managePageTitle": "管理標籤",
     "addLabel": "新增標籤",
     "name": "名稱",
+    "other": "其他",
     "color": "顏色",
     "description": "說明",
     "save": "儲存",
@@ -102,6 +127,30 @@
     "tokenInvalid": "登入逾時，請重新登入。",
     "loginCta": "使用 GitHub 登入"
   },
+  "toast": {
+    "promptCreated": "已建立 prompt",
+    "promptUpdated": "已更新 prompt",
+    "archived": "已封存 prompt",
+    "restored": "已還原 prompt",
+    "versionAdded": "已新增版本",
+    "versionUpdated": "已更新版本",
+    "versionDeleted": "已刪除版本",
+    "labelCreated": "已建立標籤",
+    "labelUpdated": "已更新標籤",
+    "labelDeleted": "已刪除標籤",
+    "linkCopied": "已複製分享連結"
+  },
+  "errors": {
+    "rateLimited": "已達 GitHub API 速率限制，請稍後再試。",
+    "rateLimitedHint": "登入後可享有較高的速率限制。",
+    "unauthorized": "登入狀態已失效，請重新登入。",
+    "forbidden": "沒有權限執行此操作。",
+    "notFound": "找不到資源。",
+    "validation": "輸入內容有誤，請檢查後再試。",
+    "network": "網路連線發生問題，請檢查連線。",
+    "unknown": "發生未知錯誤，請稍後再試。",
+    "copyFailed": "複製失敗，請手動複製。"
+  },
   "common": {
     "loading": "載入中…",
     "back": "返回",
@@ -114,6 +163,7 @@
     "saving": "儲存中…",
     "deleting": "刪除中…",
     "copy": "複製",
-    "copied": "已複製！"
+    "copied": "已複製！",
+    "retry": "重試"
   }
 }

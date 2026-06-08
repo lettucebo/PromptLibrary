@@ -18,7 +18,16 @@
     "showingResults": "Showing {{filtered}} of {{total}} {{count, plural, one {prompt} other {prompts}}}",
     "loadFailed": "Failed to load prompts",
     "unknownError": "Unknown error",
-    "newPrompt": "New Prompt"
+    "newPrompt": "New Prompt",
+    "sortLabel": "Sort by",
+    "sort": {
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "updated": "Recently updated",
+      "versions": "Most versions"
+    },
+    "totalResults": "{{count}} {{count, plural, one {prompt} other {prompts}}}",
+    "endOfResults": "End of results"
   },
   "filter": {
     "model": "🤖 Model",
@@ -31,6 +40,7 @@
     "noPrompts": "No prompts yet",
     "noMatching": "No matching prompts",
     "createFirst": "Create a GitHub Issue in this repo to add your first prompt.",
+    "createFirstAuthed": "Create your first prompt!",
     "tryAdjusting": "Try adjusting your search query or removing some filters.",
     "defaultTitle": "No prompts found",
     "defaultDescription": "Try adjusting your search or filters."
@@ -39,6 +49,7 @@
     "back": "Back to Library",
     "notFound": "Prompt not found.",
     "viewOnGitHub": "View on GitHub",
+    "share": "Copy share link",
     "promptHeading": "Prompt",
     "versionHistory": "Version History",
     "versionCount_one": "{{count}} version",
@@ -49,11 +60,14 @@
     "edit": "Edit",
     "archive": "Archive",
     "restore": "Restore",
+    "archivedBanner": "This prompt is archived and hidden from the library.",
+    "compareWithPrevious": "Compare with previous",
     "archiveConfirmTitle": "Archive this prompt?",
     "archiveConfirmBody": "This will close the GitHub issue and add the `archived` label. The prompt will be hidden from the library but can be restored later.",
     "archiveConfirm": "Yes, archive",
     "archiveCancel": "Cancel",
     "addVersion": "Add new version",
+    "deleteCommentConfirmTitle": "Delete version",
     "deleteCommentConfirm": "Delete this version? This cannot be undone.",
     "save": "Save",
     "cancel": "Cancel",
@@ -70,19 +84,30 @@
       "titleRequired": "Title is required",
       "titleTooLong": "Title must be 256 characters or fewer",
       "uploading": "Uploading image…",
-      "uploadFailed": "Image upload failed: {{error}}"
+      "uploadFailed": "Image upload failed: {{error}}",
+      "uploadTypeError": "Only PNG / JPEG / GIF / WebP images are supported.",
+      "uploadSizeError": "Image must be {{max}}MB or smaller.",
+      "draftFound": "An unsaved draft was found.",
+      "restoreDraft": "Restore draft",
+      "discardDraft": "Discard draft",
+      "unsavedTitle": "Unsaved changes",
+      "unsavedBody": "You have unsaved changes. Are you sure you want to leave?",
+      "leave": "Leave",
+      "stay": "Stay"
     }
   },
   "comment": {
     "edit": "Edit",
     "delete": "Delete",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "unknownAuthor": "Unknown user"
   },
   "label": {
     "managePageTitle": "Manage Labels",
     "addLabel": "Add label",
     "name": "Name",
+    "other": "Other",
     "color": "Color",
     "description": "Description",
     "save": "Save",
@@ -102,6 +127,30 @@
     "tokenInvalid": "Your session has expired. Please sign in again.",
     "loginCta": "Sign in with GitHub"
   },
+  "toast": {
+    "promptCreated": "Prompt created",
+    "promptUpdated": "Prompt updated",
+    "archived": "Prompt archived",
+    "restored": "Prompt restored",
+    "versionAdded": "Version added",
+    "versionUpdated": "Version updated",
+    "versionDeleted": "Version deleted",
+    "labelCreated": "Label created",
+    "labelUpdated": "Label updated",
+    "labelDeleted": "Label deleted",
+    "linkCopied": "Share link copied"
+  },
+  "errors": {
+    "rateLimited": "GitHub API rate limit reached. Please try again later.",
+    "rateLimitedHint": "Signing in gives you a higher rate limit.",
+    "unauthorized": "Your session expired. Please sign in again.",
+    "forbidden": "You don't have permission to do that.",
+    "notFound": "Resource not found.",
+    "validation": "Something looks off with the input. Please check and retry.",
+    "network": "A network problem occurred. Please check your connection.",
+    "unknown": "An unexpected error occurred. Please try again.",
+    "copyFailed": "Copy failed. Please copy manually."
+  },
   "common": {
     "loading": "Loading…",
     "back": "Back",
@@ -114,6 +163,7 @@
     "saving": "Saving…",
     "deleting": "Deleting…",
     "copy": "Copy",
-    "copied": "Copied!"
+    "copied": "Copied!",
+    "retry": "Retry"
   }
 }

@@ -10,6 +10,7 @@ import {
   startLogin as startLoginApi,
 } from '../lib/auth';
 import { setUnauthorizedHandler } from '../lib/github';
+import { useToast } from './ToastContext';
 import type { AuthSession } from '../types';
 
 interface AuthContextValue {
@@ -18,34 +19,35 @@ interface AuthContextValue {
   startLogin: (returnTo?: string) => void;
   signOut: () => Promise<void>;
   exchange: (code: string, state: string) => Promise<{ session: AuthSession; returnTo: string }>;
-  notice: { type: 'info' | 'error'; message: string } | null;
-  clearNotice: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<AuthSession | null>(() => getStoredAuth());
-  const [notice, setNotice] = useState<{ type: 'info' | 'error'; message: string } | null>(null);
+  const toast = useToast();
 
   const handleUnauthorized = useCallback(() => {
     clearAuthStorage();
     setSession(null);
-    setNotice({ type: 'error', message: 'tokenInvalid' });
-  }, []);
+    toast.error('auth.tokenInvalid');
+  }, [toast]);
 
   useEffect(() => {
     setUnauthorizedHandler(handleUnauthorized);
     return () => setUnauthorizedHandler(null);
   }, [handleUnauthorized]);
 
-  const startLogin = useCallback((returnTo?: string) => {
-    try {
-      startLoginApi(returnTo);
-    } catch (err) {
-      setNotice({ type: 'error', message: err instanceof Error ? err.message : 'login_failed' });
-    }
-  }, []);
+  const startLogin = useCallback(
+    (returnTo?: string) => {
+      try {
+        startLoginApi(returnTo);
+      } catch (err) {
+        toast.push({ type: 'error', message: err instanceof Error ? err.message : 'login_failed' });
+      }
+    },
+    [toast],
+  );
 
   const exchange = useCallback(async (code: string, state: string) => {
     const next = await exchangeCodeApi(code, state);
@@ -70,10 +72,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       startLogin,
       signOut,
       exchange,
-      notice,
-      clearNotice: () => setNotice(null),
     }),
-    [session, startLogin, signOut, exchange, notice],
+    [session, startLogin, signOut, exchange],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

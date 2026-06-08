@@ -122,6 +122,84 @@ export async function fetchPrompts(token?: string): Promise<Prompt[]> {
   return prompts;
 }
 
+export type { PromptSort, SortOrder } from '../types';
+
+export interface SearchPromptsParams {
+  text?: string;
+  filters?: Partial<Record<keyof typeof config.labelPrefixes, string[]>>;
+  sort?: import('../types').PromptSort;
+  order?: import('../types').SortOrder;
+  page?: number;
+  perPage?: number;
+  token?: string;
+}
+
+export interface SearchPromptsResult {
+  items: Prompt[];
+  totalCount: number;
+  incompleteResults: boolean;
+  hasNextPage: boolean;
+  page: number;
+}
+
+/** GitHub Search API hard cap on reachable results. */
+const SEARCH_RESULT_CAP = 1000;
+
+/**
+ * Server-side search/sort/pagination over prompt issues via the GitHub Search API.
+ * Excludes `meta` / `archived` and pull requests. Note: multiple label filters are
+ * ANDed by the Search API (must match all selected labels).
+ */
+export async function searchPrompts(params: SearchPromptsParams = {}): Promise<SearchPromptsResult> {
+  const { text, filters, sort = 'created', order = 'desc', page = 1, perPage = 30, token } = params;
+  const octokit = getOctokit(token);
+
+  const qParts: string[] = [
+    `repo:${config.owner}/${config.repo}`,
+    'is:issue',
+    'is:open',
+    `-label:${config.metaLabel}`,
+    `-label:${config.archivedLabel}`,
+  ];
+
+  if (filters) {
+    for (const [category, values] of Object.entries(filters)) {
+      const prefix = config.labelPrefixes[category as keyof typeof config.labelPrefixes];
+      if (!prefix || !values) continue;
+      for (const value of values) {
+        qParts.push(`label:"${prefix}${value}"`);
+      }
+    }
+  }
+
+  const trimmed = (text ?? '').trim();
+  if (trimmed) qParts.push(trimmed);
+
+  const { data } = await octokit.rest.search.issuesAndPullRequests({
+    q: qParts.join(' '),
+    sort,
+    order,
+    per_page: perPage,
+    page,
+  });
+
+  const items = data.items
+    .filter((issue) => !issue.pull_request)
+    .map((issue) => mapIssueToPrompt(issue as Parameters<typeof mapIssueToPrompt>[0]));
+
+  const loaded = (page - 1) * perPage + data.items.length;
+  const reachable = Math.min(data.total_count, SEARCH_RESULT_CAP);
+  const hasNextPage = loaded < reachable && data.items.length === perPage;
+
+  return {
+    items,
+    totalCount: data.total_count,
+    incompleteResults: data.incomplete_results,
+    hasNextPage,
+    page,
+  };
+}
+
 export async function fetchPrompt(issueNumber: number, token?: string): Promise<Prompt> {
   const { data } = await getOctokit(token).rest.issues.get({
     owner: config.owner,

@@ -17,6 +17,9 @@ importers:
       '@uiw/react-md-editor':
         specifier: ^4.0.4
         version: 4.1.0(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      diff:
+        specifier: ^9.0.0
+        version: 9.0.0
       i18next:
         specifier: ^24.0.5
         version: 24.2.3(typescript@5.9.3)
@@ -731,6 +734,10 @@ packages:
 
   didyoumean@1.2.2:
     resolution: {integrity: sha512-gxtyfqMg7GKyhQmb056K7M3xszy/myH8w+B4RT+QXBQsvAOdc3XymqDDPHx1BgPgsdAA5SIifona89YtRATDzw==}
+
+  diff@9.0.0:
+    resolution: {integrity: sha512-svtcdpS8CgJyqAjEQIXdb3OjhFVVYjzGAPO8WGCmRbrml64SPw/jJD4GoE98aR7r25A0XcgrK3F02yw9R/vhQw==}
+    engines: {node: '>=0.3.1'}
 
   direction@2.0.1:
     resolution: {integrity: sha512-9S6m9Sukh1cZNknO1CWAr2QAWsbKLafQiyM5gZ7VgXHeuaoUwffKN4q6NC4A/Mf9iiPlOXQEKW/Mv/mh9/3YFA==}
@@ -2103,6 +2110,8 @@ snapshots:
       dequal: 2.0.3
 
   didyoumean@1.2.2: {}
+
+  diff@9.0.0: {}
 
   direction@2.0.1: {}
 
