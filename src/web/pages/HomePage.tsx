@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, X, Plus, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSearchPrompts } from '../hooks/usePrompts';
+import { useGroupedLabels } from '../hooks/useLabels';
 import { useAuth } from '../contexts/AuthContext';
 import PromptCard from '../components/PromptCard';
 import CategoryFilter from '../components/CategoryFilter';
@@ -161,6 +162,8 @@ export default function HomePage() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const filterState: FilterState = { search: debouncedSearch, ...filters };
+  const grouped = useGroupedLabels();
+  const hasFilterGroups = Object.values(grouped).some((v) => v.length > 0);
 
   return (
     <div>
@@ -194,22 +197,24 @@ export default function HomePage() {
             {t('home.newPrompt')}
           </Link>
         )}
-        <button
-          onClick={() => setShowFilters((p) => !p)}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors lg:hidden ${
-            showFilters || activeFilterCount > 0
-              ? 'bg-indigo-600 text-white border-indigo-600'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700'
-          }`}
-        >
-          <SlidersHorizontal className="h-4 w-4" />
-          {t('home.filtersButton')}
-          {activeFilterCount > 0 && (
-            <span className="bg-white text-indigo-600 rounded-full px-1.5 text-xs font-bold">
-              {activeFilterCount}
-            </span>
-          )}
-        </button>
+        {hasFilterGroups && (
+          <button
+            onClick={() => setShowFilters((p) => !p)}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors lg:hidden ${
+              showFilters || activeFilterCount > 0
+                ? 'bg-indigo-600 text-white border-indigo-600'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700'
+            }`}
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            {t('home.filtersButton')}
+            {activeFilterCount > 0 && (
+              <span className="bg-white text-indigo-600 rounded-full px-1.5 text-xs font-bold">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Mobile sort */}
@@ -252,11 +257,13 @@ export default function HomePage() {
       )}
 
       <div className="flex gap-6">
-        <div className={`${showFilters ? 'block' : 'hidden'} lg:block w-full lg:w-56 xl:w-64 flex-shrink-0`}>
-          <CategoryFilter filters={filterState} onChange={toggleFilter} />
-        </div>
+        {hasFilterGroups && (
+          <div className={`${showFilters ? 'block' : 'hidden'} lg:block w-full lg:w-56 xl:w-64 flex-shrink-0`}>
+            <CategoryFilter filters={filterState} onChange={toggleFilter} />
+          </div>
+        )}
 
-        <div className={`${showFilters ? 'hidden' : 'block'} lg:block flex-1 min-w-0`}>
+        <div className={`${showFilters && hasFilterGroups ? 'hidden' : 'block'} lg:block flex-1 min-w-0`}>
           {isLoading && <LoadingSpinner className="py-20" />}
 
           {isError && (
