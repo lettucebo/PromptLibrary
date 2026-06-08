@@ -26,7 +26,8 @@
       "updated": "最近更新",
       "versions": "版本最多"
     },
-    "totalResults": "共 {{count}} 筆 prompt",
+    "totalResults_one": "共 {{count}} 筆 prompt",
+    "totalResults_other": "共 {{count}} 筆 prompt",
     "endOfResults": "已顯示全部結果"
   },
   "filter": {

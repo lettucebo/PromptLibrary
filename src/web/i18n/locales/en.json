@@ -26,7 +26,8 @@
       "updated": "Recently updated",
       "versions": "Most versions"
     },
-    "totalResults": "{{count}} {{count, plural, one {prompt} other {prompts}}}",
+    "totalResults_one": "{{count}} prompt",
+    "totalResults_other": "{{count}} prompts",
     "endOfResults": "End of results"
   },
   "filter": {

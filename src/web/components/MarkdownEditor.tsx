@@ -94,7 +94,9 @@ export default function MarkdownEditor({
       const images = files.filter((f) => f.type.startsWith('image/'));
       if (images.length === 0) return;
       e.preventDefault();
-      for (const file of images) void handleFile(file);
+      void (async () => {
+        for (const file of images) await handleFile(file);
+      })();
     },
     [handleFile],
   );
@@ -105,7 +107,9 @@ export default function MarkdownEditor({
       const images = files.filter((f) => f.type.startsWith('image/'));
       if (images.length === 0) return;
       e.preventDefault();
-      for (const file of images) void handleFile(file);
+      void (async () => {
+        for (const file of images) await handleFile(file);
+      })();
     },
     [handleFile],
   );

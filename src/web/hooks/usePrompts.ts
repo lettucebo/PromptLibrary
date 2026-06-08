@@ -34,6 +34,7 @@ export interface SearchPromptsArgs {
 
 /** Infinite, server-side search over prompt issues (GitHub Search API). */
 export function useSearchPrompts(args: SearchPromptsArgs) {
+  const { session } = useAuth();
   return useInfiniteQuery({
     queryKey: ['prompts', 'search', args.text, args.sort, args.order, args.filters],
     queryFn: ({ pageParam }) =>
@@ -43,6 +44,7 @@ export function useSearchPrompts(args: SearchPromptsArgs) {
         sort: args.sort,
         order: args.order,
         page: pageParam,
+        token: session?.token,
       }),
     initialPageParam: 1,
     getNextPageParam: (last) => (last.hasNextPage ? last.page + 1 : undefined),
@@ -53,27 +55,30 @@ export function useSearchPrompts(args: SearchPromptsArgs) {
 /** Prefetch a single prompt (used for hover prefetch on cards). */
 export function usePrefetchPrompt() {
   const qc = useQueryClient();
+  const { session } = useAuth();
   return (issueNumber: number) =>
     void qc.prefetchQuery({
       queryKey: ['prompt', issueNumber],
-      queryFn: () => fetchPrompt(issueNumber),
+      queryFn: () => fetchPrompt(issueNumber, session?.token),
       staleTime: 5 * 60 * 1000,
     });
 }
 
 export function usePrompt(issueNumber: number) {
+  const { session } = useAuth();
   return useQuery({
     queryKey: ['prompt', issueNumber],
-    queryFn: () => fetchPrompt(issueNumber),
+    queryFn: () => fetchPrompt(issueNumber, session?.token),
     enabled: !!issueNumber,
     staleTime: 5 * 60 * 1000,
   });
 }
 
 export function usePromptComments(issueNumber: number) {
+  const { session } = useAuth();
   return useQuery({
     queryKey: ['prompt-comments', issueNumber],
-    queryFn: () => fetchPromptComments(issueNumber),
+    queryFn: () => fetchPromptComments(issueNumber, session?.token),
     enabled: !!issueNumber,
     staleTime: 5 * 60 * 1000,
   });
