@@ -11,7 +11,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ConfirmDialog from '../components/ConfirmDialog';
 import type { Label } from '../types';
 
-const CATEGORY_ORDER = ['model', 'type', 'usecase', 'output', 'lang', 'difficulty', 'other'] as const;
+const CATEGORY_ORDER = ['output', 'model', 'type', 'usecase', 'lang', 'difficulty', 'other'] as const;
 
 function colorIsValid(c: string): boolean {
   return /^[0-9a-f]{6}$/i.test(c);
