@@ -3,9 +3,9 @@ import { MessageSquare, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LabelBadge from './LabelBadge';
 import CopyButton from './CopyButton';
-import OpenInAIButton from './OpenInAIButton';
 import { usePrefetchPrompt } from '../hooks/usePrompts';
 import { highlight } from '../lib/highlight';
+import { parseYouTubeId, youtubeThumbnailUrl } from '../lib/youtube';
 import type { Prompt } from '../types';
 
 interface PromptCardProps {
@@ -29,11 +29,26 @@ function previewText(body: string, maxLen = 200): string {
   return stripped.slice(0, maxLen).trimEnd() + '…';
 }
 
+/** First image output, else a thumbnail from the first valid YouTube output. */
+function thumbnailUrl(prompt: Prompt): string | null {
+  for (const o of prompt.outputs) {
+    if (o.type === 'image') return o.url;
+  }
+  for (const o of prompt.outputs) {
+    if (o.type === 'youtube') {
+      const id = parseYouTubeId(o.url);
+      if (id) return youtubeThumbnailUrl(id);
+    }
+  }
+  return null;
+}
+
 export default function PromptCard({ prompt, query = '' }: PromptCardProps) {
   const { t } = useTranslation();
   const formatDate = useFormatDate();
   const prefetch = usePrefetchPrompt();
-  const preview = prompt.body ? previewText(prompt.body) : '';
+  const preview = prompt.promptText ? previewText(prompt.promptText) : '';
+  const thumb = thumbnailUrl(prompt);
 
   return (
     <Link
@@ -46,15 +61,9 @@ export default function PromptCard({ prompt, query = '' }: PromptCardProps) {
         <h3 className="text-base font-semibold text-content group-hover:text-primary line-clamp-2">
           {highlight(prompt.title, query)}
         </h3>
-        {prompt.body && (
+        {prompt.promptText && (
           <div className="flex-shrink-0 flex items-center gap-1">
-            <OpenInAIButton
-              text={prompt.body}
-              compact
-              stopPropagation
-              className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity"
-            />
-            <CopyButton text={prompt.body} iconOnly stopPropagation notifyTokens />
+            <CopyButton text={prompt.promptText} iconOnly stopPropagation notifyTokens />
           </div>
         )}
       </div>
@@ -67,8 +76,17 @@ export default function PromptCard({ prompt, query = '' }: PromptCardProps) {
         </div>
       )}
 
+      {thumb && (
+        <div
+          className="mb-3 overflow-hidden rounded-lg border border-line bg-subtle"
+          style={{ aspectRatio: '16 / 9' }}
+        >
+          <img src={thumb} alt="" loading="lazy" className="h-full w-full object-cover" />
+        </div>
+      )}
+
       {preview && (
-        <p className="text-sm text-content-soft line-clamp-3 mb-4">
+        <p className={`text-sm text-content-soft mb-4 ${thumb ? 'line-clamp-2' : 'line-clamp-3'}`}>
           {highlight(preview, query)}
         </p>
       )}

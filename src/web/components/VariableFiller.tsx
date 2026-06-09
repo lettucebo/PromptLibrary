@@ -5,7 +5,6 @@ import { extractVariables, fillTemplate } from '../lib/promptVars';
 import { estimateTokens } from '../lib/tokens';
 import { copyText } from '../lib/clipboard';
 import { useToast } from '../contexts/ToastContext';
-import OpenInAIButton from './OpenInAIButton';
 
 /**
  * Renders a form for every `{{var}}` / `[VAR]` placeholder in the prompt so the
@@ -63,7 +62,6 @@ export default function VariableFiller({ template }: { template: string }) {
           <Copy className="h-3.5 w-3.5" />
           {t('prompt.variables.copyFilled')}
         </button>
-        <OpenInAIButton text={filled} />
         <button
           type="button"
           onClick={() => setValues({})}

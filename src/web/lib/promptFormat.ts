@@ -23,7 +23,9 @@ export function promptToJson(prompt: Prompt): string {
   return JSON.stringify(
     {
       title: prompt.title,
-      body: prompt.body,
+      prompt: prompt.promptText,
+      ...(prompt.notes ? { notes: prompt.notes } : {}),
+      ...(prompt.outputs.length ? { outputs: prompt.outputs } : {}),
       labels: prompt.labels.map((l) => l.name),
       url: prompt.html_url,
     },

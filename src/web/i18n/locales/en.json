@@ -55,7 +55,8 @@
     "viewOnGitHub": "View on GitHub",
     "share": "Copy share link",
     "promptHeading": "Prompt",
-    "openInAI": "Open in AI tool",
+    "notesHeading": "Notes",
+    "outputHeading": "Output Examples",
     "related": "Related prompts",
     "copyText": "Copy as plain text",
     "copyMarkdown": "Copy as Markdown",
@@ -64,6 +65,10 @@
       "title": "Fill in variables",
       "copyFilled": "Copy filled prompt",
       "reset": "Reset"
+    },
+    "output": {
+      "viewImage": "View image",
+      "videoExample": "Video example"
     },
     "versionHistory": "Version History",
     "versionCount_one": "{{count}} version",
@@ -107,7 +112,29 @@
       "unsavedTitle": "Unsaved changes",
       "unsavedBody": "You have unsaved changes. Are you sure you want to leave?",
       "leave": "Leave",
-      "stay": "Stay"
+      "stay": "Stay",
+      "fieldPrompt": "Prompt",
+      "fieldPromptPlaceholder": "The prompt text users will copy",
+      "fieldNotes": "Notes",
+      "fieldNotesHint": "Optional context — not included when copying",
+      "fieldNotesPlaceholder": "Background, tips, caveats…",
+      "fieldOutputs": "Output Examples",
+      "fieldOutputsHint": "Showcase what this prompt produces",
+      "outputAddImage": "Add image",
+      "outputAddYouTube": "Add YouTube",
+      "outputAddText": "Add text",
+      "outputTypeImage": "Image",
+      "outputTypeYouTube": "YouTube",
+      "outputTypeText": "Text",
+      "outputYouTubePlaceholder": "Paste a YouTube link…",
+      "outputYouTubeInvalid": "Enter a valid YouTube link.",
+      "outputTextPlaceholder": "Example output…",
+      "outputCaptionPlaceholder": "Caption (optional)",
+      "outputRemove": "Remove",
+      "outputMoveUp": "Move up",
+      "outputMoveDown": "Move down",
+      "outputEmpty": "No output examples yet.",
+      "outputImageUploading": "Uploading…"
     }
   },
   "comment": {
@@ -154,8 +181,7 @@
     "labelDeleted": "Label deleted",
     "linkCopied": "Share link copied",
     "copiedTokens": "Copied · ≈ {{tokens}} tokens",
-    "copiedJson": "Copied as JSON",
-    "openedInAI": "Copied · opening {{tool}}"
+    "copiedJson": "Copied as JSON"
   },
   "errors": {
     "rateLimited": "GitHub API rate limit reached. Please try again later.",

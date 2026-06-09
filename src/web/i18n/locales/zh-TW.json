@@ -55,7 +55,8 @@
     "viewOnGitHub": "在 GitHub 上檢視",
     "share": "複製分享連結",
     "promptHeading": "Prompt 內容",
-    "openInAI": "在 AI 工具開啟",
+    "notesHeading": "說明",
+    "outputHeading": "輸出範例",
     "related": "相關 Prompt",
     "copyText": "複製為純文字",
     "copyMarkdown": "複製為 Markdown",
@@ -64,6 +65,10 @@
       "title": "填入變數",
       "copyFilled": "複製填好的 Prompt",
       "reset": "清除"
+    },
+    "output": {
+      "viewImage": "檢視圖片",
+      "videoExample": "影片範例"
     },
     "versionHistory": "版本紀錄",
     "versionCount_one": "{{count}} 個版本",
@@ -107,7 +112,29 @@
       "unsavedTitle": "尚未儲存變更",
       "unsavedBody": "你有未儲存的變更，確定要離開嗎？",
       "leave": "離開",
-      "stay": "留在此頁"
+      "stay": "留在此頁",
+      "fieldPrompt": "Prompt",
+      "fieldPromptPlaceholder": "使用者會複製的 prompt 內容",
+      "fieldNotes": "說明",
+      "fieldNotesHint": "選填補充——複製時不會包含",
+      "fieldNotesPlaceholder": "背景、技巧、注意事項…",
+      "fieldOutputs": "輸出範例",
+      "fieldOutputsHint": "展示這個 prompt 會產生什麼",
+      "outputAddImage": "新增圖片",
+      "outputAddYouTube": "新增 YouTube",
+      "outputAddText": "新增文字",
+      "outputTypeImage": "圖片",
+      "outputTypeYouTube": "YouTube",
+      "outputTypeText": "文字",
+      "outputYouTubePlaceholder": "貼上 YouTube 連結…",
+      "outputYouTubeInvalid": "請輸入有效的 YouTube 連結。",
+      "outputTextPlaceholder": "範例輸出…",
+      "outputCaptionPlaceholder": "說明文字（選填）",
+      "outputRemove": "移除",
+      "outputMoveUp": "上移",
+      "outputMoveDown": "下移",
+      "outputEmpty": "尚未新增輸出範例。",
+      "outputImageUploading": "上傳中…"
     }
   },
   "comment": {
@@ -154,8 +181,7 @@
     "labelDeleted": "已刪除標籤",
     "linkCopied": "已複製分享連結",
     "copiedTokens": "已複製 · ≈ {{tokens}} tokens",
-    "copiedJson": "已複製 JSON",
-    "openedInAI": "已複製 · 開啟 {{tool}}"
+    "copiedJson": "已複製 JSON"
   },
   "errors": {
     "rateLimited": "已達 GitHub API 速率限制，請稍後再試。",
