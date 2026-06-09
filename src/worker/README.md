@@ -24,7 +24,7 @@ All requests must include an `Origin` header matching `ALLOWED_ORIGIN` (comma-se
 | `OWNER` | `lettucebo` |
 | `REPO` | `PromptLibrary` |
 | `GITHUB_CLIENT_ID` | (replace with the OAuth App's client id) |
-| `ALLOWED_ORIGIN` | `https://lettucebo.github.io` (add `,http://localhost:5173` for local dev) |
+| `ALLOWED_ORIGIN` | `https://prompt.yu.money` (add `,http://localhost:5173` for local dev) |
 
 The **secret** value is set via `wrangler secret put`:
 
@@ -36,8 +36,8 @@ The **secret** value is set via `wrangler secret put`:
 
 1. https://github.com/settings/developers → `New OAuth App`
 2. Application name: `PromptLibrary`
-3. Homepage URL: `https://lettucebo.github.io/PromptLibrary/`
-4. **Authorization callback URL: `https://lettucebo.github.io/PromptLibrary/`** (the bare site root; HashRouter requires this — see `index.html` for the bootstrap redirect).
+3. Homepage URL: `https://prompt.yu.money/`
+4. **Authorization callback URL: `https://prompt.yu.money/`** (the bare site root; HashRouter requires this — see `index.html` for the bootstrap redirect).
 5. Generate a client secret. Save the **client id** into `wrangler.jsonc` `vars.GITHUB_CLIENT_ID` and into the SPA `VITE_GITHUB_CLIENT_ID`. Save the **client secret** as a Worker secret.
 
 ## Local development
@@ -56,7 +56,7 @@ pnpm dev
 For local SPA dev, add the SPA dev origin to `wrangler.jsonc` `ALLOWED_ORIGIN`:
 
 ```jsonc
-"ALLOWED_ORIGIN": "https://lettucebo.github.io,http://localhost:5173"
+"ALLOWED_ORIGIN": "https://prompt.yu.money,http://localhost:5173"
 ```
 
 ## Deploy
