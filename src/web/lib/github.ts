@@ -1,5 +1,6 @@
 import { Octokit } from '@octokit/rest';
 import { config } from '../config';
+import { parsePromptBody } from './promptBody';
 import type { Label, ParsedLabel, Prompt, PromptComment } from '../types';
 
 type UnauthorizedHandler = () => void;
@@ -73,11 +74,17 @@ function mapIssueToPrompt(issue: {
 
   const parsedLabels = labels.map(parseLabel);
 
+  const body = issue.body ?? '';
+  const { prompt: promptText, notes, outputs } = parsePromptBody(body);
+
   return {
     id: issue.id,
     number: issue.number,
     title: issue.title,
-    body: issue.body ?? '',
+    body,
+    promptText,
+    notes,
+    outputs,
     labels,
     parsedLabels,
     comments: issue.comments,

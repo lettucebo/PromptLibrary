@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Save } from 'lucide-react';
 import MarkdownEditor from '../components/MarkdownEditor';
+import OutputExampleEditor from '../components/OutputExampleEditor';
 import LabelMultiSelect from '../components/LabelMultiSelect';
 import InlineLabelCreator from '../components/InlineLabelCreator';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -11,15 +12,38 @@ import { useCreatePrompt, usePrompt, useUpdatePrompt } from '../hooks/usePrompts
 import { useToast } from '../contexts/ToastContext';
 import { errorMessageKey } from '../lib/errors';
 import { countChars, estimateTokens } from '../lib/tokens';
+import { serializePromptBody } from '../lib/promptBody';
+import type { OutputExample } from '../types';
 
 interface DraftShape {
   title: string;
-  body: string;
+  prompt: string;
+  notes: string;
+  outputs: OutputExample[];
   labels: string[];
 }
 
 function serialize(d: DraftShape): string {
-  return JSON.stringify({ title: d.title, body: d.body, labels: [...d.labels].sort() });
+  return JSON.stringify({
+    title: d.title,
+    prompt: d.prompt,
+    notes: d.notes,
+    outputs: d.outputs,
+    labels: [...d.labels].sort(),
+  });
+}
+
+/** Coerce a parsed draft into the current shape (tolerates the pre-sections
+ *  `{title, body, labels}` format by mapping legacy `body` onto `prompt`). */
+function normalizeDraft(raw: unknown): DraftShape {
+  const d = (raw ?? {}) as Record<string, unknown>;
+  return {
+    title: typeof d.title === 'string' ? d.title : '',
+    prompt: typeof d.prompt === 'string' ? d.prompt : typeof d.body === 'string' ? d.body : '',
+    notes: typeof d.notes === 'string' ? d.notes : '',
+    outputs: Array.isArray(d.outputs) ? (d.outputs as OutputExample[]) : [],
+    labels: Array.isArray(d.labels) ? (d.labels as string[]) : [],
+  };
 }
 
 export default function PromptEditorPage() {
@@ -36,7 +60,9 @@ export default function PromptEditorPage() {
   const updateMut = useUpdatePrompt();
 
   const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
+  const [promptText, setPromptText] = useState('');
+  const [notes, setNotes] = useState('');
+  const [outputs, setOutputs] = useState<OutputExample[]>([]);
   const [labels, setLabels] = useState<string[]>([]);
   const [titleError, setTitleError] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -44,14 +70,22 @@ export default function PromptEditorPage() {
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [draftAvailable, setDraftAvailable] = useState<DraftShape | null>(null);
 
-  const initialRef = useRef<DraftShape>({ title: '', body: '', labels: [] });
+  const initialRef = useRef<DraftShape>({ title: '', prompt: '', notes: '', outputs: [], labels: [] });
   const draftCheckedRef = useRef(false);
 
   useEffect(() => {
     if (editing && existing) {
-      initialRef.current = { title: existing.title, body: existing.body, labels: existing.labels.map((l) => l.name) };
+      initialRef.current = {
+        title: existing.title,
+        prompt: existing.promptText,
+        notes: existing.notes,
+        outputs: existing.outputs,
+        labels: existing.labels.map((l) => l.name),
+      };
       setTitle(existing.title);
-      setBody(existing.body);
+      setPromptText(existing.promptText);
+      setNotes(existing.notes);
+      setOutputs(existing.outputs);
       setLabels(existing.labels.map((l) => l.name));
     }
   }, [editing, existing]);
@@ -64,25 +98,29 @@ export default function PromptEditorPage() {
     try {
       const raw = localStorage.getItem(draftKey);
       if (!raw) return;
-      const draft = JSON.parse(raw) as DraftShape;
+      const draft = normalizeDraft(JSON.parse(raw));
       if (serialize(draft) !== serialize(initialRef.current)) setDraftAvailable(draft);
     } catch {
       /* ignore malformed draft */
     }
   }, [editing, existing, draftKey]);
 
-  const isDirty = () => serialize({ title, body, labels }) !== serialize(initialRef.current);
+  const isDirty = () =>
+    serialize({ title, prompt: promptText, notes, outputs, labels }) !== serialize(initialRef.current);
 
   // Autosave draft (debounced).
   useEffect(() => {
     if (editing && !existing) return;
     const id2 = window.setTimeout(() => {
-      if (isDirty()) localStorage.setItem(draftKey, JSON.stringify({ title, body, labels }));
-      else localStorage.removeItem(draftKey);
+      if (isDirty()) {
+        localStorage.setItem(draftKey, JSON.stringify({ title, prompt: promptText, notes, outputs, labels }));
+      } else {
+        localStorage.removeItem(draftKey);
+      }
     }, 500);
     return () => window.clearTimeout(id2);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, body, labels, editing, existing, draftKey]);
+  }, [title, promptText, notes, outputs, labels, editing, existing, draftKey]);
 
   // Warn on tab close / reload while dirty.
   useEffect(() => {
@@ -95,7 +133,7 @@ export default function PromptEditorPage() {
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, body, labels]);
+  }, [title, promptText, notes, outputs, labels]);
 
   if (editing && loadingExisting) return <LoadingSpinner className="py-20" />;
 
@@ -112,6 +150,7 @@ export default function PromptEditorPage() {
     const err = validateTitle(title);
     setTitleError(err);
     if (err) return;
+    const body = serializePromptBody({ prompt: promptText, notes, outputs });
     try {
       if (editing) {
         await updateMut.mutateAsync({ issueNumber, title, body, labels });
@@ -143,7 +182,9 @@ export default function PromptEditorPage() {
   const restoreDraft = () => {
     if (!draftAvailable) return;
     setTitle(draftAvailable.title);
-    setBody(draftAvailable.body);
+    setPromptText(draftAvailable.prompt);
+    setNotes(draftAvailable.notes);
+    setOutputs(draftAvailable.outputs);
     setLabels(draftAvailable.labels);
     setDraftAvailable(null);
   };
@@ -220,15 +261,32 @@ export default function PromptEditorPage() {
         <div>
           <div className="flex items-center justify-between mb-1">
             <label className="block text-sm font-medium text-content-soft">
-              {t('prompt.editor.fieldBody')}
+              {t('prompt.editor.fieldPrompt')}
             </label>
             <span className="text-xs text-content-faint">
-              {t('common.charsTokens', { chars: countChars(body), tokens: estimateTokens(body) })}
+              {t('common.charsTokens', { chars: countChars(promptText), tokens: estimateTokens(promptText) })}
             </span>
           </div>
-          <MarkdownEditor value={body} onChange={setBody} onUploadError={setUploadError} />
-          {uploadError && <p className="mt-2 text-xs text-error">{uploadError}</p>}
+          <MarkdownEditor value={promptText} onChange={setPromptText} onUploadError={setUploadError} />
         </div>
+
+        <div>
+          <label className="block text-sm font-medium text-content-soft mb-1">
+            {t('prompt.editor.fieldNotes')}
+          </label>
+          <p className="text-xs text-content-faint mb-2">{t('prompt.editor.fieldNotesHint')}</p>
+          <MarkdownEditor value={notes} onChange={setNotes} onUploadError={setUploadError} height={200} />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-content-soft mb-1">
+            {t('prompt.editor.fieldOutputs')}
+          </label>
+          <p className="text-xs text-content-faint mb-2">{t('prompt.editor.fieldOutputsHint')}</p>
+          <OutputExampleEditor value={outputs} onChange={setOutputs} onUploadError={setUploadError} />
+        </div>
+
+        {uploadError && <p className="text-xs text-error">{uploadError}</p>}
 
         <div>
           <label className="block text-sm font-medium text-content-soft mb-2">

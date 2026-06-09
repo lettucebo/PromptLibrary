@@ -55,11 +55,39 @@ The Worker only handles the secret-bearing OAuth flow and gates by `repos/{owner
 | Concept | GitHub mapping |
 |---------|---------------|
 | Prompt | Open Issue without `meta` or `archived` label |
-| Prompt content | Issue body (Markdown) |
+| Prompt content | Issue body — the **copyable prompt** section (Markdown) |
+| Notes / output examples | Stored in the same issue body via hidden HTML-comment markers (see below) |
 | Prompt version | Issue comment (shown as v2, v3, …) |
 | Categories | Issue labels with prefixes (`model:`, `type:`, …) |
 | Soft delete | `archived` label + closed state |
 | Image attachment | Committed under `.attachments/<yyyymmdd>/<uuid>.<ext>` on the default branch |
+
+### Prompt body format
+
+The issue body is split into sections with **HTML-comment markers** (invisible when the
+issue is viewed on GitHub). Only the `pl:prompt` section is copied / opened in AI tools /
+used for variable filling:
+
+```markdown
+<!-- pl:prompt:start -->
+You are an expert... {{topic}}
+<!-- pl:prompt:end -->
+
+<!-- pl:notes:start -->
+Optional notes/description — never copied.
+<!-- pl:notes:end -->
+
+<!-- pl:outputs
+[{"type":"youtube","url":"https://youtu.be/ID","caption":"..."},
+ {"type":"image","url":"https://raw.githubusercontent.com/.../x.png"},
+ {"type":"text","text":"example output..."}]
+-->
+```
+
+Output examples are typed (`image` / `youtube` / `text`), rendered as a gallery on the
+detail page and a thumbnail on home cards. A body **without** markers is treated entirely as
+the prompt, so legacy prompts keep working. Simple prompts (no notes/outputs) are stored
+marker-free. Parsing/serialization lives in [src/web/lib/promptBody.ts](src/web/lib/promptBody.ts).
 
 ## Local Development
 
@@ -173,10 +201,20 @@ There is no hard delete. Archive applies the `archived` label and closes the iss
 
 In the Markdown editor, **drag & drop** or **paste** an image to upload. The image is committed to the repository under `.attachments/<yyyymmdd>/<uuid>.<ext>` on the default branch and inserted as a `raw.githubusercontent.com` URL. Each upload creates a separate commit; orphan files are not auto-pruned.
 
+## Output examples
+
+The prompt editor has an **Output Examples** section to showcase what a prompt produces:
+
+- **Image** — uploaded via the same `.attachments/` pipeline.
+- **YouTube** — paste a link; it is embedded (privacy-preserving `youtube-nocookie.com`).
+- **Text** — a Markdown snippet for chat-style outputs.
+
+Examples render as a gallery on the prompt detail page and the first image / YouTube thumbnail appears on the home card. Direct video-file uploads are intentionally **not** supported (repo size / CSP); use a YouTube link instead.
+
 ## Security
 
 - **Token** stored in `localStorage` (`pl_gh_token`); the SPA never sees the OAuth client secret.
-- **CSP** — strict `Content-Security-Policy` meta tag in [src/web/index.html](src/web/index.html). `script-src 'self'`, `connect-src` whitelisted, `frame-ancestors 'none'`.
+- **CSP** — strict `Content-Security-Policy` meta tag in [src/web/index.html](src/web/index.html). `script-src 'self'`, `connect-src` whitelisted, `frame-ancestors 'none'`. YouTube output-example embeds are allowed via `frame-src https://www.youtube-nocookie.com`, and their thumbnails via `img-src https://i.ytimg.com`.
 - **XSS** — Markdown rendering uses `rehype-sanitize`.
 - **CSRF** — OAuth flow uses cryptographically-random `state` stored in `sessionStorage`.
 - **401 handling** — Octokit response hook auto-clears auth and prompts re-login on token revocation.

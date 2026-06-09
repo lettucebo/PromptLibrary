@@ -12,11 +12,24 @@ export interface ParsedLabel {
   category: 'model' | 'type' | 'usecase' | 'output' | 'lang' | 'difficulty' | 'other';
 }
 
+/** A typed output-example item shown in a prompt's preview gallery. */
+export type OutputExample =
+  | { type: 'youtube'; url: string; caption?: string }
+  | { type: 'image'; url: string; caption?: string }
+  | { type: 'text'; text: string; caption?: string };
+
 export interface Prompt {
   id: number;
   number: number;
   title: string;
+  /** Raw issue body (structured; used by the editor). */
   body: string;
+  /** Parsed prompt section — the copyable content. */
+  promptText: string;
+  /** Parsed optional notes/description section (not copied). */
+  notes: string;
+  /** Parsed typed output examples. */
+  outputs: OutputExample[];
   labels: Label[];
   parsedLabels: ParsedLabel[];
   comments: number;

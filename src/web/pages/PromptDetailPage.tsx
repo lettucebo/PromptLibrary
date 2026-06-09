@@ -35,9 +35,9 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import CommentEditor from '../components/CommentEditor';
 import CopyButton from '../components/CopyButton';
 import CopyMenu from '../components/CopyMenu';
-import OpenInAIButton from '../components/OpenInAIButton';
 import VariableFiller from '../components/VariableFiller';
 import RelatedPrompts from '../components/RelatedPrompts';
+import OutputExamples from '../components/OutputExamples';
 import { addRecentlyViewed } from '../lib/recentlyViewed';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Markdown from '../components/Markdown';
@@ -387,12 +387,12 @@ export default function PromptDetailPage() {
             </span>
           )}
           {prompt.user && <span className="flex items-center gap-1">{t('prompt.by', { user: prompt.user.login })}</span>}
-          {prompt.body && (
+          {prompt.promptText && (
             <span className="flex items-center gap-1">
               <Hash className="h-3.5 w-3.5" />
               {t('common.charsTokens', {
-                chars: countChars(prompt.body),
-                tokens: estimateTokens(prompt.body),
+                chars: countChars(prompt.promptText),
+                tokens: estimateTokens(prompt.promptText),
               })}
             </span>
           )}
@@ -408,15 +408,25 @@ export default function PromptDetailPage() {
             </h2>
           </div>
           <div className="flex items-center gap-2">
-            <OpenInAIButton text={prompt.body} />
             <CopyMenu prompt={prompt} />
           </div>
         </div>
 
-        <Markdown>{prompt.body}</Markdown>
+        <Markdown>{prompt.promptText}</Markdown>
       </div>
 
-      <VariableFiller template={prompt.body} />
+      {prompt.notes && (
+        <div className="bg-card rounded-2xl border border-line p-6 mb-6">
+          <h2 className="text-sm font-semibold text-content-soft uppercase tracking-wider mb-4">
+            {t('prompt.notesHeading')}
+          </h2>
+          <Markdown>{prompt.notes}</Markdown>
+        </div>
+      )}
+
+      <OutputExamples outputs={prompt.outputs} />
+
+      <VariableFiller template={prompt.promptText} />
 
       {(loadingComments || comments.length > 0) && (
         <div>
@@ -438,7 +448,7 @@ export default function PromptDetailPage() {
                 comment={comment}
                 issueNumber={issueNumber}
                 version={idx + 2}
-                previousText={idx === 0 ? prompt.body : comments[idx - 1].body}
+                previousText={idx === 0 ? prompt.promptText : comments[idx - 1].body}
               />
             ))}
           </div>

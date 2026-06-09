@@ -28,7 +28,7 @@ export default function CopyMenu({ prompt }: { prompt: Prompt }) {
 
   const doCopy = async (kind: Kind) => {
     const payload =
-      kind === 'json' ? promptToJson(prompt) : kind === 'text' ? stripMarkdown(prompt.body) : prompt.body;
+      kind === 'json' ? promptToJson(prompt) : kind === 'text' ? stripMarkdown(prompt.promptText) : prompt.promptText;
     const ok = await copyText(payload);
     if (!ok) {
       toast.error('errors.copyFailed');

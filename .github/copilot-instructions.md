@@ -87,12 +87,15 @@ GitHub's user-attachment endpoint is **not** used (no public OAuth API).
 | Concept | GitHub mapping |
 |---------|---------------|
 | Prompt | Open Issue without `meta` and `archived` labels |
-| Prompt body | Issue body (Markdown) |
-| Prompt version | Issue comment (rendered as v2, v3, …; original body is v1, with inline diff vs the previous version) |
+| Prompt body | Issue body (Markdown) — structured into sections via hidden `pl:*` HTML-comment markers; only the `pl:prompt` section is copyable (see below) |
+| Notes / output examples | Same issue body: `pl:notes` (Markdown) + `pl:outputs` (JSON array of typed `image`/`youtube`/`text` items) |
+| Prompt version | Issue comment (rendered as v2, v3, …; the v1 baseline is the parsed `pl:prompt` text, with inline diff vs the previous version) |
 | Categories | Issue labels with prefixes (`model:`, `type:`, `usecase:`, `lang:`, `difficulty:`) |
 | Soft delete | Apply `archived` label + close issue |
 | Restore | Remove `archived` label + reopen |
 | Image attachment | File at `.attachments/<yyyymmdd>/<uuid>.<ext>` on the default branch |
+
+**Prompt body format** (`lib/promptBody.ts` `parsePromptBody`/`serializePromptBody`): sections are delimited by `<!-- pl:prompt:start/end -->`, `<!-- pl:notes:start/end -->`, and a `<!-- pl:outputs [JSON] -->` block. A body with **no** markers is treated entirely as the prompt (legacy-compatible); serialization stays marker-free unless notes/outputs exist. `mapIssueToPrompt` parses this and attaches derived `promptText` / `notes` / `outputs` to every `Prompt` (raw `body` kept for the editor). **All copy / variable-fill consumers use `promptText`, never `body`.**
 
 The home list uses the **GitHub Search API** (`searchPrompts` in `lib/github.ts` → `useSearchPrompts` infinite query) for server-side text search, sort, and pagination; its query excludes `meta` and `archived`. `fetchPrompts` (REST, fetch-all) is retained for non-search callers. Note: the Search API ANDs multiple `label:` qualifiers, so selecting several labels in one category requires matching all of them. It also does **not** support boolean operators on qualifiers — `label:a OR label:b` returns HTTP 422 (`OR`/`AND`/`NOT` apply to free text only), so an "OR labels" filter would need per-label queries merged client-side.
 
@@ -144,8 +147,9 @@ src/
       highlight.tsx              highlight(text, query) → ReactNode with <mark> wrapping matches
       tokens.ts                  countChars / estimateTokens (CJK-aware heuristic) for char+token counts
       promptVars.ts              extract/fill {{var}} & [VAR] placeholders (excludes md links & task lists)
-      promptFormat.ts            stripMarkdown + promptToJson (multi-format copy/export)
-      aiTools.ts                 AI_TOOLS + aiUrl(): deep links for ChatGPT / Claude / Gemini
+      promptFormat.ts            stripMarkdown + promptToJson (multi-format copy/export; uses promptText + outputs)
+      promptBody.ts              parse/serialize pl:prompt / pl:notes / pl:outputs sections in the issue body
+      youtube.ts                 parseYouTubeId / youtubeEmbedUrl (nocookie) / youtubeThumbnailUrl
       recentlyViewed.ts          get/addRecentlyViewed (localStorage pl_recent)
       rehypeHighlightPlaceholders.ts  rehype plugin: wrap {{var}}/[VAR] in <mark> for read-only Markdown
     hooks/
@@ -171,8 +175,9 @@ src/
       Modal.tsx                  accessible portal dialog (ESC + backdrop close)
       CopyButton.tsx             copy-to-clipboard button using lib/clipboard.ts
       CopyMenu.tsx               copy as plain text / Markdown / JSON (detail page)
-      OpenInAIButton.tsx         open the prompt in ChatGPT/Claude/Gemini (copies + opens tab)
-      VariableFiller.tsx         form to fill {{var}}/[VAR] placeholders, then copy/open result
+      VariableFiller.tsx         form to fill {{var}}/[VAR] placeholders, then copy result
+      OutputExamples.tsx         read-only output gallery (image lightbox / YouTube nocookie embed / text)
+      OutputExampleEditor.tsx    editor for typed output examples (image upload / YouTube link / text)
       RelatedPrompts.tsx         related prompts by shared label (detail page)
       RecentlyViewed.tsx         recently viewed strip (home; reads pl_recent)
       LoadingSpinner.tsx
@@ -232,7 +237,7 @@ There is **no test runner or linter** configured in either package. `typecheck` 
 - All write operations go through React Query mutation hooks in `src/web/hooks/usePrompts.ts` or `src/web/hooks/useLabels.ts`. Mutations must `invalidateQueries` for affected lists.
 - Consume the Markdown editor only via `<MarkdownEditor />` wrapper, not by importing `@uiw/react-md-editor` directly. This isolates the underlying library.
 - Read-only Markdown renders via the shared `<Markdown>` component (never `ReactMarkdown` directly) so `rehype-sanitize` is always applied. `<Markdown>` also highlights `{{var}}`/`[VAR]` placeholders (via `lib/rehypeHighlightPlaceholders.ts`); its sanitize schema is extended only to allow `<mark class>`.
-- Reuse the prompt-consumption helpers instead of reinventing: char/token counts (`lib/tokens.ts`), placeholder parse/fill (`lib/promptVars.ts` + `<VariableFiller>`), multi-format export (`lib/promptFormat.ts` + `<CopyMenu>`), AI deep links (`lib/aiTools.ts` + `<OpenInAIButton>`), recently-viewed (`lib/recentlyViewed.ts` + `<RecentlyViewed>`).
+- Reuse the prompt-consumption helpers instead of reinventing: char/token counts (`lib/tokens.ts`), placeholder parse/fill (`lib/promptVars.ts` + `<VariableFiller>`), multi-format export (`lib/promptFormat.ts` + `<CopyMenu>`), recently-viewed (`lib/recentlyViewed.ts` + `<RecentlyViewed>`).
 - User feedback via `useToast()` (`contexts/ToastContext.tsx`); `<ToastViewport/>` is mounted in `Layout`. Map errors to friendly keys with `errorMessageKey()` (`lib/errors.ts`). Use `<ConfirmDialog>` / `<Modal>` instead of `window.confirm`/`alert`. Copy via the shared `<CopyButton>` / `copyText()` (`lib/clipboard.ts`). For search-term highlighting in list items use `highlight(text, query)` from `lib/highlight.tsx`.
 - Home list state (search, sort, filters) lives in the URL via `useSearchParams` (HashRouter-compatible) so views are shareable/bookmarkable.
 - Write-protected pages (`PromptEditorPage`, `LabelsAdminPage`) and the `AuthCallbackPage` must be `React.lazy`-loaded; wrap with `Suspense` and use `<AuthGuard>` for write routes.
@@ -243,10 +248,11 @@ There is **no test runner or linter** configured in either package. `typecheck` 
 
 - **CSP** — strict `<meta http-equiv="Content-Security-Policy">` in `index.html`:
   - `default-src 'self'`
-  - `img-src 'self' https://*.githubusercontent.com data:` (favicon/app assets + avatars & `raw.githubusercontent.com`; external image hosts are intentionally disallowed)
+  - `img-src 'self' https://*.githubusercontent.com https://i.ytimg.com data:` (favicon/app assets + avatars & `raw.githubusercontent.com` + YouTube output-example thumbnails; other external image hosts are intentionally disallowed)
   - `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com` (Tailwind + MDEditor inline SVG styles + Google Fonts CSS)
   - `font-src 'self' https://fonts.gstatic.com` (Libre Baskerville / Noto Sans TC / JetBrains Mono web fonts)
   - `script-src 'self' 'unsafe-inline'` (theme + OAuth bootstrap inline scripts)
+  - `frame-src https://www.youtube-nocookie.com` (output-example video embeds)
   - `connect-src` allow-list: `api.github.com`, `github.com`, `raw.githubusercontent.com`, Worker URL
   - `frame-ancestors 'none'`, `object-src 'none'`, `base-uri 'self'`
 - **XSS** — the shared `<Markdown>` component (`components/Markdown.tsx`) and `<MarkdownEditor>` previewOptions both apply `rehype-sanitize`; all read-only renders go through `<Markdown>`. `<Markdown>` extends the default sanitize schema only to allow `<mark class>` (placeholder highlighting) — no other tags/attributes are added.
