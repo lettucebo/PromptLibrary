@@ -172,8 +172,10 @@ export async function searchPrompts(params: SearchPromptsParams = {}): Promise<S
     }
   }
 
-  const trimmed = (text ?? '').trim();
-  if (trimmed) qParts.push(trimmed);
+  // Wrap in quotes to prevent qualifier injection (e.g. "repo:other/owner").
+  // Strip embedded quotes so the phrase stays valid.
+  const trimmed = (text ?? '').trim().replace(/"/g, '');
+  if (trimmed) qParts.push(`"${trimmed}"`);
 
   const { data } = await octokit.rest.search.issuesAndPullRequests({
     q: qParts.join(' '),
