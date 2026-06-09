@@ -16,7 +16,7 @@ import EmptyState from '../components/EmptyState';
 import { errorMessageKey, isRateLimitError } from '../lib/errors';
 import type { FilterState, PromptSort, SortOrder } from '../types';
 
-const CATS = ['model', 'type', 'usecase', 'output', 'lang', 'difficulty'] as const;
+const CATS = ['output', 'model', 'type', 'usecase', 'lang', 'difficulty'] as const;
 type Cat = (typeof CATS)[number];
 
 type SortKey = 'newest' | 'oldest' | 'updated' | 'versions';

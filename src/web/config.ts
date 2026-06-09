@@ -2,10 +2,10 @@ export const config = {
   owner: 'lettucebo',
   repo: 'PromptLibrary',
   labelPrefixes: {
+    output: 'output:',
     model: 'model:',
     type: 'type:',
     usecase: 'usecase:',
-    output: 'output:',
     lang: 'lang:',
     difficulty: 'difficulty:',
   },
