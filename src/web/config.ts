@@ -5,6 +5,7 @@ export const config = {
     model: 'model:',
     type: 'type:',
     usecase: 'usecase:',
+    output: 'output:',
     lang: 'lang:',
     difficulty: 'difficulty:',
   },

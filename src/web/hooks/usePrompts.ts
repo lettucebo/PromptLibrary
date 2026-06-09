@@ -27,7 +27,7 @@ export function usePrompts() {
 
 export interface SearchPromptsArgs {
   text: string;
-  filters: Partial<Record<'model' | 'type' | 'usecase' | 'lang' | 'difficulty', string[]>>;
+  filters: Partial<Record<'model' | 'type' | 'usecase' | 'output' | 'lang' | 'difficulty', string[]>>;
   sort: PromptSort;
   order: SortOrder;
 }
