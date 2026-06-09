@@ -133,7 +133,7 @@ export default function MarkdownEditor({
         previewOptions={PREVIEW_OPTIONS}
       />
       {upload.isPending && (
-        <p className="mt-2 text-xs text-indigo-600 dark:text-indigo-400">
+        <p className="mt-2 text-xs text-primary">
           {t('prompt.editor.uploading')}
         </p>
       )}

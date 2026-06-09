@@ -28,7 +28,9 @@
     },
     "totalResults_one": "共 {{count}} 筆 prompt",
     "totalResults_other": "共 {{count}} 筆 prompt",
-    "endOfResults": "已顯示全部結果"
+    "endOfResults": "已顯示全部結果",
+    "recentlyViewed": "最近瀏覽",
+    "surprise": "隨機探索"
   },
   "filter": {
     "model": "🤖 模型",
@@ -52,6 +54,16 @@
     "viewOnGitHub": "在 GitHub 上檢視",
     "share": "複製分享連結",
     "promptHeading": "Prompt 內容",
+    "openInAI": "在 AI 工具開啟",
+    "related": "相關 Prompt",
+    "copyText": "複製為純文字",
+    "copyMarkdown": "複製為 Markdown",
+    "copyJson": "複製為 JSON",
+    "variables": {
+      "title": "填入變數",
+      "copyFilled": "複製填好的 Prompt",
+      "reset": "清除"
+    },
     "versionHistory": "版本紀錄",
     "versionCount_one": "{{count}} 個版本",
     "versionCount_other": "{{count}} 個版本",
@@ -139,7 +151,10 @@
     "labelCreated": "已建立標籤",
     "labelUpdated": "已更新標籤",
     "labelDeleted": "已刪除標籤",
-    "linkCopied": "已複製分享連結"
+    "linkCopied": "已複製分享連結",
+    "copiedTokens": "已複製 · ≈ {{tokens}} tokens",
+    "copiedJson": "已複製 JSON",
+    "openedInAI": "已複製 · 開啟 {{tool}}"
   },
   "errors": {
     "rateLimited": "已達 GitHub API 速率限制，請稍後再試。",
@@ -165,6 +180,7 @@
     "deleting": "刪除中…",
     "copy": "複製",
     "copied": "已複製！",
-    "retry": "重試"
+    "retry": "重試",
+    "charsTokens": "{{chars}} 字元 · ≈ {{tokens}} tokens"
   }
 }

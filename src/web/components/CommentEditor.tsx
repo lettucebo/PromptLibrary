@@ -36,13 +36,13 @@ export default function CommentEditor({
   return (
     <div className="space-y-2">
       <MarkdownEditor value={value} onChange={setValue} preview="edit" height={height} />
-      {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="text-xs text-error">{error}</p>}
       <div className="flex items-center justify-end gap-2">
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="px-3 py-1.5 rounded-lg text-sm font-medium text-content-soft hover:bg-subtle"
           >
             {t('comment.cancel')}
           </button>
@@ -51,7 +51,7 @@ export default function CommentEditor({
           type="button"
           onClick={() => void handleSubmit()}
           disabled={isPending || !value.trim()}
-          className="px-3 py-1.5 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+          className="px-3 py-1.5 rounded-lg text-sm font-medium bg-primary text-on-primary hover:bg-primary-dark disabled:opacity-50"
         >
           {isPending ? t('common.saving') : submitLabel ?? t('comment.save')}
         </button>

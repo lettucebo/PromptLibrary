@@ -21,9 +21,9 @@ export default function Navbar({ darkMode, onToggleDark }: NavbarProps) {
     startLogin();
   };
   return (
-    <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur border-b border-gray-200 dark:border-gray-700">
+    <header className="sticky top-0 z-50 bg-card/80 backdrop-blur border-b border-line">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 font-bold text-indigo-600 dark:text-indigo-400">
+        <Link to="/" className="flex items-center gap-2 font-title font-bold text-primary">
           <Sparkles className="h-5 w-5" />
           <span className="hidden sm:inline">{t('nav.appName')}</span>
         </Link>
@@ -32,7 +32,7 @@ export default function Navbar({ darkMode, onToggleDark }: NavbarProps) {
           <LanguageSwitcher />
           <button
             onClick={onToggleDark}
-            className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-2 rounded-lg text-content-soft hover:bg-subtle transition-colors"
             title={darkMode ? t('nav.lightMode') : t('nav.darkMode')}
             aria-label={darkMode ? t('nav.lightMode') : t('nav.darkMode')}
           >
@@ -45,7 +45,7 @@ export default function Navbar({ darkMode, onToggleDark }: NavbarProps) {
               type="button"
               onClick={handleLogin}
               disabled={loggingIn}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-70"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-primary text-on-primary hover:bg-primary-dark disabled:opacity-70"
             >
               {loggingIn ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
               <span className="hidden sm:inline">{loggingIn ? t('common.loading') : t('nav.login')}</span>

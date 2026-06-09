@@ -57,18 +57,18 @@ export default function Modal({
       <div
         ref={panelRef}
         tabIndex={-1}
-        className={`relative w-full max-w-md rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl outline-none ${className}`}
+        className={`relative w-full max-w-md rounded-2xl bg-card border border-line shadow-xl outline-none ${className}`}
       >
         {(title || !hideCloseButton) && (
           <div className="flex items-start justify-between gap-4 p-5 pb-0">
             {title && (
-              <h2 className="text-base font-semibold text-gray-900 dark:text-white">{title}</h2>
+              <h2 className="text-base font-semibold text-content">{title}</h2>
             )}
             {!hideCloseButton && (
               <button
                 type="button"
                 onClick={onClose}
-                className="p-1 -m-1 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                className="p-1 -m-1 rounded-md text-content-faint hover:text-content-soft"
                 aria-label={t('common.close')}
               >
                 <X className="h-5 w-5" />

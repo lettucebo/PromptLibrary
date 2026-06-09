@@ -58,11 +58,11 @@ export default function AuthCallbackPage() {
   if (error) {
     return (
       <div className="max-w-md mx-auto py-20 text-center">
-        <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
+        <p className="text-error mb-4">{error}</p>
         <button
           type="button"
           onClick={() => navigate('/', { replace: true })}
-          className="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700"
+          className="px-4 py-2 rounded-lg bg-primary text-on-primary text-sm hover:bg-primary-dark"
         >
           {t('prompt.back')}
         </button>
@@ -72,7 +72,7 @@ export default function AuthCallbackPage() {
   return (
     <div className="py-20 text-center">
       <LoadingSpinner className="mb-4" />
-      <p className="text-sm text-gray-500 dark:text-gray-400">{t('auth.checkingPermission')}</p>
+      <p className="text-sm text-content-soft">{t('auth.checkingPermission')}</p>
     </div>
   );
 }

@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { SlidersHorizontal, X, Plus, AlertTriangle } from 'lucide-react';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { SlidersHorizontal, X, Plus, AlertTriangle, Dices } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSearchPrompts } from '../hooks/usePrompts';
 import { useGroupedLabels } from '../hooks/useLabels';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
+import { searchPrompts } from '../lib/github';
 import PromptCard from '../components/PromptCard';
 import CategoryFilter from '../components/CategoryFilter';
 import SearchBar from '../components/SearchBar';
+import RecentlyViewed from '../components/RecentlyViewed';
 import LoadingSpinner from '../components/LoadingSpinner';
 import EmptyState from '../components/EmptyState';
 import { errorMessageKey, isRateLimitError } from '../lib/errors';
@@ -27,10 +30,13 @@ const SORT_KEYS: SortKey[] = ['newest', 'oldest', 'updated', 'versions'];
 
 export default function HomePage() {
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, session } = useAuth();
+  const toast = useToast();
+  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [surprising, setSurprising] = useState(false);
 
   // ---- URL-derived state
   const urlSearch = params.get('q') ?? '';
@@ -124,6 +130,24 @@ export default function HomePage() {
     });
   };
 
+  const handleSurprise = async () => {
+    if (surprising) return;
+    setSurprising(true);
+    try {
+      const first = await searchPrompts({ perPage: 1, token: session?.token });
+      const total = Math.min(first.totalCount, 1000);
+      if (total <= 0) return;
+      const idx = Math.floor(Math.random() * total);
+      const res = idx === 0 ? first : await searchPrompts({ perPage: 1, page: idx + 1, token: session?.token });
+      const item = res.items[0] ?? first.items[0];
+      if (item) navigate(`/prompt/${item.number}`);
+    } catch (e) {
+      toast.error(errorMessageKey(e));
+    } finally {
+      setSurprising(false);
+    }
+  };
+
   const activeFilterCount = CATS.reduce((sum, c) => sum + filters[c].length, 0);
   const hasCriteria = !!debouncedSearch || activeFilterCount > 0;
 
@@ -179,7 +203,7 @@ export default function HomePage() {
           id="sort-select"
           value={sortKey}
           onChange={(e) => handleSortChange(e.target.value)}
-          className="hidden sm:block px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="hidden sm:block px-3 py-2.5 rounded-xl border border-line bg-card text-sm text-content-soft focus:outline-none focus:ring-2 focus:ring-primary"
         >
           {SORT_KEYS.map((k) => (
             <option key={k} value={k}>
@@ -188,10 +212,22 @@ export default function HomePage() {
           ))}
         </select>
 
+        <button
+          type="button"
+          onClick={() => void handleSurprise()}
+          disabled={surprising}
+          className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-medium border border-line bg-card text-content-soft hover:bg-subtle disabled:opacity-50"
+          title={t('home.surprise')}
+          aria-label={t('home.surprise')}
+        >
+          <Dices className="h-4 w-4" />
+          <span className="hidden lg:inline">{t('home.surprise')}</span>
+        </button>
+
         {isAuthenticated && (
           <Link
             to="/prompt/new"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-medium bg-primary text-on-primary hover:bg-primary-dark"
           >
             <Plus className="h-4 w-4" />
             {t('home.newPrompt')}
@@ -202,14 +238,14 @@ export default function HomePage() {
             onClick={() => setShowFilters((p) => !p)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors lg:hidden ${
               showFilters || activeFilterCount > 0
-                ? 'bg-indigo-600 text-white border-indigo-600'
-                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700'
+                ? 'bg-primary text-on-primary border-primary'
+                : 'bg-card text-content-soft border-line'
             }`}
           >
             <SlidersHorizontal className="h-4 w-4" />
             {t('home.filtersButton')}
             {activeFilterCount > 0 && (
-              <span className="bg-white text-indigo-600 rounded-full px-1.5 text-xs font-bold">
+              <span className="bg-card text-primary rounded-full px-1.5 text-xs font-bold">
                 {activeFilterCount}
               </span>
             )}
@@ -222,7 +258,7 @@ export default function HomePage() {
         <select
           value={sortKey}
           onChange={(e) => handleSortChange(e.target.value)}
-          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full px-3 py-2.5 rounded-xl border border-line bg-card text-sm text-content-soft focus:outline-none focus:ring-2 focus:ring-primary"
         >
           {SORT_KEYS.map((k) => (
             <option key={k} value={k}>
@@ -234,13 +270,13 @@ export default function HomePage() {
 
       {activeFilterCount > 0 && (
         <div className="mb-4 flex items-center gap-2 flex-wrap">
-          <span className="text-sm text-gray-500 dark:text-gray-400">{t('home.activeFilters')}</span>
+          <span className="text-sm text-content-soft">{t('home.activeFilters')}</span>
           {CATS.flatMap((category) =>
             filters[category].map((value) => (
               <button
                 key={`${category}:${value}`}
                 onClick={() => toggleFilter(category, value)}
-                className="flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/60"
+                className="flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-primary/10 text-primary hover:bg-primary/20"
               >
                 {t(`filter.${category}`, { defaultValue: category })}: {value}
                 <X className="h-3 w-3" />
@@ -249,12 +285,14 @@ export default function HomePage() {
           )}
           <button
             onClick={clearFilters}
-            className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 underline"
+            className="text-xs text-content-soft hover:text-content underline"
           >
             {t('home.clearAll')}
           </button>
         </div>
       )}
+
+      {!hasCriteria && <RecentlyViewed />}
 
       <div className="flex gap-6">
         {hasFilterGroups && (
@@ -268,13 +306,13 @@ export default function HomePage() {
 
           {isError && (
             <div className="text-center py-20">
-              <AlertTriangle className="h-10 w-10 text-red-400 mx-auto mb-3" />
-              <p className="font-medium text-red-500 dark:text-red-400">{t('home.loadFailed')}</p>
-              <p className="text-sm mt-1 text-gray-500 dark:text-gray-400">
+              <AlertTriangle className="h-10 w-10 text-error mx-auto mb-3" />
+              <p className="font-medium text-error">{t('home.loadFailed')}</p>
+              <p className="text-sm mt-1 text-content-soft">
                 {t(errorMessageKey(error), { defaultValue: t('home.unknownError') })}
               </p>
               {isRateLimitError(error) && (
-                <p className="text-sm mt-1 text-gray-500 dark:text-gray-400">
+                <p className="text-sm mt-1 text-content-soft">
                   {t('errors.rateLimitedHint')}
                 </p>
               )}
@@ -295,7 +333,7 @@ export default function HomePage() {
                 !hasCriteria && isAuthenticated ? (
                   <Link
                     to="/prompt/new"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-primary text-on-primary hover:bg-primary-dark"
                   >
                     <Plus className="h-4 w-4" />
                     {t('home.newPrompt')}
@@ -307,7 +345,7 @@ export default function HomePage() {
 
           {!isLoading && !isError && items.length > 0 && (
             <>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              <p className="text-sm text-content-soft mb-4">
                 {t('home.totalResults', { count: totalCount })}
               </p>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -319,7 +357,7 @@ export default function HomePage() {
               <div ref={sentinelRef} className="h-10" />
               {isFetchingNextPage && <LoadingSpinner className="py-6" />}
               {!hasNextPage && items.length > 6 && (
-                <p className="text-center text-xs text-gray-400 dark:text-gray-500 py-6">
+                <p className="text-center text-xs text-content-faint py-6">
                   {t('home.endOfResults')}
                 </p>
               )}

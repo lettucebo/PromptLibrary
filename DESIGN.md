@@ -1,6 +1,6 @@
 ---
 version: alpha
-name: Monē Warm Morandi
+name: Prompt Library Warm Morandi
 description: >-
   Monē 拍照記帳 App 的設計系統。暖色莫蘭迪（Warm Morandi）視覺語言，低飽和、沉穩溫暖，
   傳達專業且親切的理財體驗。跨平台共用（mone-web / admin-portal / mobile / landing），
@@ -307,7 +307,7 @@ components:
     typography: "{typography.display}"
 ---
 
-# Monē Design System
+# Prompt Library Design System
 
 > Monē 是一款以「拍照記帳」為核心的 AI 智慧記帳應用程式。本檔案是 Monē 設計系統的
 > **單一真實來源（SSOT）**，描述視覺識別供 AI agent 與人類在跨 session、跨工具時保持一致。

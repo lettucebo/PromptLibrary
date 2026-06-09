@@ -42,7 +42,7 @@ export default function LabelMultiSelect({ selected, onChange }: LabelMultiSelec
         const heading = t(`filter.${cat}`);
         return (
           <div key={cat}>
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{heading}</p>
+            <p className="text-xs font-medium text-content-soft mb-1">{heading}</p>
             <div className="flex flex-wrap gap-1.5">
               {items.map(({ name, color }) => {
                 const isSelected = selected.includes(name);
@@ -55,7 +55,7 @@ export default function LabelMultiSelect({ selected, onChange }: LabelMultiSelec
                     className={`text-xs px-2 py-1 rounded-full border transition-colors ${
                       isSelected
                         ? 'text-white border-transparent'
-                        : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                        : 'bg-card border-line text-content-soft hover:bg-subtle'
                     }`}
                   >
                     {name}

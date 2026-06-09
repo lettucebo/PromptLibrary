@@ -10,8 +10,9 @@ import {
   Trash2,
   Share2,
   GitCompare,
+  Hash,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { diffLines } from 'diff';
 import {
@@ -28,10 +29,16 @@ import { useToast } from '../contexts/ToastContext';
 import { config } from '../config';
 import { copyText } from '../lib/clipboard';
 import { errorMessageKey } from '../lib/errors';
+import { countChars, estimateTokens } from '../lib/tokens';
 import LabelBadge from '../components/LabelBadge';
 import LoadingSpinner from '../components/LoadingSpinner';
 import CommentEditor from '../components/CommentEditor';
 import CopyButton from '../components/CopyButton';
+import CopyMenu from '../components/CopyMenu';
+import OpenInAIButton from '../components/OpenInAIButton';
+import VariableFiller from '../components/VariableFiller';
+import RelatedPrompts from '../components/RelatedPrompts';
+import { addRecentlyViewed } from '../lib/recentlyViewed';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Markdown from '../components/Markdown';
 import type { PromptComment } from '../types';
@@ -50,7 +57,7 @@ function useFormatDate() {
 
 function VersionBadge({ version }: { version: number }) {
   return (
-    <span className="inline-flex items-center justify-center min-w-[1.75rem] h-6 px-1.5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold">
+    <span className="inline-flex items-center justify-center min-w-[1.75rem] h-6 px-1.5 rounded-full bg-primary/15 text-primary text-xs font-bold">
       v{version}
     </span>
   );
@@ -66,16 +73,16 @@ function VersionDiff({ oldText, newText }: { oldText: string; newText: string })
     for (const line of lines) rows.push({ type, text: line });
   }
   return (
-    <pre className="text-xs leading-5 rounded-lg overflow-x-auto border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-2">
+    <pre className="text-xs leading-5 rounded-lg overflow-x-auto border border-line bg-subtle p-2">
       {rows.map((r, i) => (
         <div
           key={i}
           className={
             r.type === 'add'
-              ? 'bg-green-100/70 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+              ? 'bg-success-container text-accent-green'
               : r.type === 'del'
-                ? 'bg-red-100/70 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                : 'text-gray-600 dark:text-gray-400'
+                ? 'bg-error-container text-accent-red'
+                : 'text-content-soft'
           }
         >
           <span className="select-none inline-block w-4 text-center opacity-60">
@@ -131,17 +138,17 @@ function CommentCard({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+    <div className="bg-card rounded-xl border border-line p-5">
       <div className="flex items-center justify-between mb-4 gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <VersionBadge version={version} />
           {comment.user && (
             <img src={comment.user.avatar_url} alt={comment.user.login} className="h-7 w-7 rounded-full" />
           )}
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
+          <span className="text-sm font-medium text-content-soft truncate">
             {comment.user?.login ?? t('comment.unknownAuthor')}
           </span>
-          <span className="hidden sm:flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
+          <span className="hidden sm:flex items-center gap-1 text-xs text-content-faint">
             <Calendar className="h-3 w-3" />
             {formatDate(comment.created_at)}
           </span>
@@ -150,8 +157,8 @@ function CommentCard({
           <button
             type="button"
             onClick={() => setShowDiff((v) => !v)}
-            className={`p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 ${
-              showDiff ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400'
+            className={`p-1.5 rounded-md hover:bg-subtle ${
+              showDiff ? 'text-primary' : 'text-content-faint hover:text-primary'
             }`}
             title={t('prompt.compareWithPrevious')}
             aria-label={t('prompt.compareWithPrevious')}
@@ -163,7 +170,7 @@ function CommentCard({
               <button
                 type="button"
                 onClick={() => setEditing(true)}
-                className="p-1.5 rounded-md text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="p-1.5 rounded-md text-content-faint hover:text-primary hover:bg-subtle"
                 title={t('comment.edit')}
                 aria-label={t('comment.edit')}
               >
@@ -173,7 +180,7 @@ function CommentCard({
                 type="button"
                 onClick={() => setConfirmDelete(true)}
                 disabled={deleteMut.isPending}
-                className="p-1.5 rounded-md text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+                className="p-1.5 rounded-md text-content-faint hover:text-error hover:bg-subtle disabled:opacity-50"
                 title={t('comment.delete')}
                 aria-label={t('comment.delete')}
               >
@@ -228,6 +235,10 @@ export default function PromptDetailPage() {
 
   const isArchived = prompt?.labels.some((l) => l.name === config.archivedLabel) ?? false;
 
+  useEffect(() => {
+    if (prompt) addRecentlyViewed({ number: prompt.number, title: prompt.title });
+  }, [prompt?.number, prompt?.title]);
+
   const handleArchive = () => {
     archiveMut.mutate(issueNumber, {
       onSuccess: () => {
@@ -256,8 +267,8 @@ export default function PromptDetailPage() {
   if (!prompt) {
     return (
       <div className="text-center py-20">
-        <p className="text-gray-500 dark:text-gray-400">{t('prompt.notFound')}</p>
-        <Link to="/" className="text-indigo-600 dark:text-indigo-400 hover:underline text-sm mt-2 inline-flex items-center gap-1">
+        <p className="text-content-soft">{t('prompt.notFound')}</p>
+        <Link to="/" className="text-primary hover:underline text-sm mt-2 inline-flex items-center gap-1">
           <ArrowLeft className="h-4 w-4" />
           {t('prompt.back')}
         </Link>
@@ -269,15 +280,15 @@ export default function PromptDetailPage() {
     <div className="max-w-4xl mx-auto">
       <Link
         to="/"
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 mb-6"
+        className="inline-flex items-center gap-1.5 text-sm text-content-soft hover:text-primary mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
         {t('prompt.back')}
       </Link>
 
       {isArchived && (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 px-4 py-3">
-          <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-300">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-warning/50 bg-warning-container px-4 py-3">
+          <div className="flex items-center gap-2 text-sm text-accent-yellow">
             <Archive className="h-4 w-4 flex-shrink-0" />
             <span>{t('prompt.archivedBanner')}</span>
           </div>
@@ -286,7 +297,7 @@ export default function PromptDetailPage() {
               type="button"
               onClick={handleRestore}
               disabled={restoreMut.isPending}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-warning text-on-warning hover:bg-warning/90 disabled:opacity-50"
             >
               <ArchiveRestore className="h-4 w-4" />
               {t('prompt.restore')}
@@ -295,15 +306,15 @@ export default function PromptDetailPage() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
+      <div className="bg-card rounded-2xl border border-line p-6 mb-6">
         <div className="flex items-start justify-between gap-4 mb-4">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">{prompt.title}</h1>
+          <h1 className="text-xl font-bold text-content leading-tight">{prompt.title}</h1>
           <div className="flex-shrink-0 flex items-center gap-1">
             {isAuthenticated && (
               <>
                 <Link
                   to={`/prompt/${issueNumber}/edit`}
-                  className="p-2 rounded-lg text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="p-2 rounded-lg text-content-faint hover:text-primary hover:bg-subtle"
                   title={t('prompt.edit')}
                   aria-label={t('prompt.edit')}
                 >
@@ -314,7 +325,7 @@ export default function PromptDetailPage() {
                     type="button"
                     onClick={handleRestore}
                     disabled={restoreMut.isPending}
-                    className="p-2 rounded-lg text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+                    className="p-2 rounded-lg text-content-faint hover:text-accent-green hover:bg-subtle disabled:opacity-50"
                     title={t('prompt.restore')}
                     aria-label={t('prompt.restore')}
                   >
@@ -325,7 +336,7 @@ export default function PromptDetailPage() {
                     type="button"
                     onClick={() => setConfirmArchive(true)}
                     disabled={archiveMut.isPending}
-                    className="p-2 rounded-lg text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+                    className="p-2 rounded-lg text-content-faint hover:text-error hover:bg-subtle disabled:opacity-50"
                     title={t('prompt.archive')}
                     aria-label={t('prompt.archive')}
                   >
@@ -337,7 +348,7 @@ export default function PromptDetailPage() {
             <button
               type="button"
               onClick={handleShare}
-              className="p-2 rounded-lg text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="p-2 rounded-lg text-content-faint hover:text-primary hover:bg-subtle transition-colors"
               title={t('prompt.share')}
               aria-label={t('prompt.share')}
             >
@@ -347,7 +358,7 @@ export default function PromptDetailPage() {
               href={prompt.html_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="p-2 rounded-lg text-content-faint hover:text-content-soft hover:bg-subtle transition-colors"
               title={t('prompt.viewOnGitHub')}
               aria-label={t('prompt.viewOnGitHub')}
             >
@@ -364,7 +375,7 @@ export default function PromptDetailPage() {
           </div>
         )}
 
-        <div className="flex flex-wrap items-center gap-4 text-xs text-gray-400 dark:text-gray-500">
+        <div className="flex flex-wrap items-center gap-4 text-xs text-content-faint">
           <span className="flex items-center gap-1">
             <Calendar className="h-3.5 w-3.5" />
             {t('prompt.createdAt', { date: formatDate(prompt.created_at) })}
@@ -376,29 +387,43 @@ export default function PromptDetailPage() {
             </span>
           )}
           {prompt.user && <span className="flex items-center gap-1">{t('prompt.by', { user: prompt.user.login })}</span>}
+          {prompt.body && (
+            <span className="flex items-center gap-1">
+              <Hash className="h-3.5 w-3.5" />
+              {t('common.charsTokens', {
+                chars: countChars(prompt.body),
+                tokens: estimateTokens(prompt.body),
+              })}
+            </span>
+          )}
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
+      <div className="bg-card rounded-2xl border border-line p-6 mb-6">
         <div className="flex items-center justify-between mb-4 gap-2">
           <div className="flex items-center gap-2">
             <VersionBadge version={1} />
-            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+            <h2 className="text-sm font-semibold text-content-soft uppercase tracking-wider">
               {t('prompt.promptHeading')}
             </h2>
           </div>
-          <CopyButton text={prompt.body} />
+          <div className="flex items-center gap-2">
+            <OpenInAIButton text={prompt.body} />
+            <CopyMenu prompt={prompt} />
+          </div>
         </div>
 
         <Markdown>{prompt.body}</Markdown>
       </div>
 
+      <VariableFiller template={prompt.body} />
+
       {(loadingComments || comments.length > 0) && (
         <div>
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4">
+          <h2 className="text-base font-semibold text-content mb-4">
             {t('prompt.versionHistory')}
             {comments.length > 0 && (
-              <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
+              <span className="ml-2 text-sm font-normal text-content-soft">
                 {t('prompt.versionCount', { count: comments.length })}
               </span>
             )}
@@ -421,6 +446,8 @@ export default function PromptDetailPage() {
       )}
 
       {isAuthenticated && <AddVersionSection issueNumber={issueNumber} />}
+
+      <RelatedPrompts prompt={prompt} />
 
       <ConfirmDialog
         open={confirmArchive}
@@ -448,7 +475,7 @@ function AddVersionSection({ issueNumber }: { issueNumber: number }) {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-card text-content-soft border border-line hover:bg-subtle"
         >
           <Plus className="h-4 w-4" />
           {t('prompt.addVersion')}
@@ -457,8 +484,8 @@ function AddVersionSection({ issueNumber }: { issueNumber: number }) {
     );
   }
   return (
-    <div className="mt-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
-      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">{t('prompt.addVersion')}</h3>
+    <div className="mt-6 bg-card rounded-2xl border border-line p-5">
+      <h3 className="text-sm font-semibold text-content-soft mb-3">{t('prompt.addVersion')}</h3>
       <CommentEditor
         isPending={createMut.isPending}
         onSubmit={async (body) => {

@@ -30,13 +30,13 @@ export default function ConfirmDialog({
 
   const confirmTone =
     tone === 'danger'
-      ? 'bg-red-600 hover:bg-red-700'
-      : 'bg-indigo-600 hover:bg-indigo-700';
+      ? 'bg-error text-on-error hover:bg-error/90'
+      : 'bg-primary text-on-primary hover:bg-primary-dark';
 
   return (
     <Modal open={open} onClose={onCancel} title={title} hideCloseButton>
       {body && (
-        <div className="text-sm text-gray-600 dark:text-gray-300 mb-5 whitespace-pre-line">
+        <div className="text-sm text-content-soft mb-5 whitespace-pre-line">
           {body}
         </div>
       )}
@@ -45,7 +45,7 @@ export default function ConfirmDialog({
           type="button"
           onClick={onCancel}
           disabled={isPending}
-          className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+          className="px-4 py-2 rounded-lg text-sm font-medium text-content-soft hover:bg-subtle disabled:opacity-50"
         >
           {cancelLabel ?? t('common.cancel')}
         </button>
@@ -53,7 +53,7 @@ export default function ConfirmDialog({
           type="button"
           onClick={onConfirm}
           disabled={isPending}
-          className={`px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50 ${confirmTone}`}
+          className={`px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 ${confirmTone}`}
         >
           {confirmLabel ?? t('common.confirm')}
         </button>

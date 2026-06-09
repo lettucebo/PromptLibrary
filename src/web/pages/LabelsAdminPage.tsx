@@ -52,18 +52,18 @@ export default function LabelsAdminPage() {
     <div className="max-w-3xl mx-auto">
       <Link
         to="/"
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 mb-6"
+        className="inline-flex items-center gap-1.5 text-sm text-content-soft hover:text-primary mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
         {t('prompt.back')}
       </Link>
 
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t('label.managePageTitle')}</h1>
+        <h1 className="text-xl font-bold text-content">{t('label.managePageTitle')}</h1>
         <button
           type="button"
           onClick={() => setCreating(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700"
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-primary text-on-primary hover:bg-primary-dark"
         >
           <Plus className="h-4 w-4" />
           {t('label.addLabel')}
@@ -90,7 +90,7 @@ export default function LabelsAdminPage() {
           const heading = cat === 'other' ? t('label.name') : t(`filter.${cat}`);
           return (
             <section key={cat}>
-              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{heading}</h2>
+              <h2 className="text-sm font-semibold text-content-soft mb-2">{heading}</h2>
               <div className="space-y-2">
                 {items.map((lbl) => (
                   <LabelRow
@@ -161,10 +161,10 @@ function LabelRow({ mode, label, isPending, onSubmit, onCancel, onDelete }: Labe
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 flex flex-wrap items-center gap-3">
+    <div className="bg-card rounded-xl border border-line p-3 flex flex-wrap items-center gap-3">
       <div className="flex items-center gap-2 flex-1 min-w-[200px]">
         <span
-          className="inline-block h-4 w-4 rounded-full border border-gray-200 dark:border-gray-600"
+          className="inline-block h-4 w-4 rounded-full border border-line"
           style={{ backgroundColor: `#${colorIsValid(color) ? color : '6b7280'}` }}
         />
         <input
@@ -173,7 +173,7 @@ function LabelRow({ mode, label, isPending, onSubmit, onCancel, onDelete }: Labe
           onChange={(e) => setName(e.target.value)}
           disabled={isProtected}
           placeholder={t('label.name')}
-          className="flex-1 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
+          className="flex-1 px-2 py-1 rounded-md border border-line bg-card text-sm text-content focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
         />
       </div>
       <input
@@ -182,21 +182,21 @@ function LabelRow({ mode, label, isPending, onSubmit, onCancel, onDelete }: Labe
         onChange={(e) => setColor(e.target.value.replace(/^#/, '').toLowerCase())}
         placeholder="6b7280"
         maxLength={6}
-        className="w-24 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        className="w-24 px-2 py-1 rounded-md border border-line bg-card text-sm font-mono focus:outline-none focus:ring-1 focus:ring-primary"
       />
       <input
         type="text"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         placeholder={t('label.description')}
-        className="flex-1 min-w-[160px] px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        className="flex-1 min-w-[160px] px-2 py-1 rounded-md border border-line bg-card text-sm text-content-soft focus:outline-none focus:ring-1 focus:ring-primary"
       />
       <div className="flex items-center gap-1">
         <button
           type="button"
           onClick={() => void handleSave()}
           disabled={isPending}
-          className="p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+          className="p-1.5 rounded-md text-content-soft hover:text-primary hover:bg-subtle disabled:opacity-50"
           title={t('label.save')}
           aria-label={t('label.save')}
         >
@@ -207,7 +207,7 @@ function LabelRow({ mode, label, isPending, onSubmit, onCancel, onDelete }: Labe
             type="button"
             onClick={() => onDelete()}
             disabled={isPending}
-            className="p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+            className="p-1.5 rounded-md text-content-soft hover:text-error hover:bg-subtle disabled:opacity-50"
             title={t('label.delete')}
             aria-label={t('label.delete')}
           >
@@ -218,7 +218,7 @@ function LabelRow({ mode, label, isPending, onSubmit, onCancel, onDelete }: Labe
           <button
             type="button"
             onClick={onCancel}
-            className="p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="p-1.5 rounded-md text-content-soft hover:text-content-soft hover:bg-subtle"
             title={t('common.cancel')}
             aria-label={t('common.cancel')}
           >
@@ -226,7 +226,7 @@ function LabelRow({ mode, label, isPending, onSubmit, onCancel, onDelete }: Labe
           </button>
         )}
       </div>
-      {error && <p className="basis-full text-xs text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="basis-full text-xs text-error">{error}</p>}
     </div>
   );
 }
