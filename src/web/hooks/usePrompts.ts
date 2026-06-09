@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   archivePrompt,
   createComment,
@@ -9,10 +9,12 @@ import {
   fetchPrompts,
   getDefaultBranch,
   restorePrompt,
+  searchPrompts,
   updateComment,
   updatePrompt,
   uploadAttachment,
 } from '../lib/github';
+import type { PromptSort, SortOrder } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
 export function usePrompts() {
@@ -23,19 +25,60 @@ export function usePrompts() {
   });
 }
 
+export interface SearchPromptsArgs {
+  text: string;
+  filters: Partial<Record<'model' | 'type' | 'usecase' | 'lang' | 'difficulty', string[]>>;
+  sort: PromptSort;
+  order: SortOrder;
+}
+
+/** Infinite, server-side search over prompt issues (GitHub Search API). */
+export function useSearchPrompts(args: SearchPromptsArgs) {
+  const { session } = useAuth();
+  return useInfiniteQuery({
+    queryKey: ['prompts', 'search', args.text, args.sort, args.order, args.filters],
+    queryFn: ({ pageParam }) =>
+      searchPrompts({
+        text: args.text,
+        filters: args.filters,
+        sort: args.sort,
+        order: args.order,
+        page: pageParam,
+        token: session?.token,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (last) => (last.hasNextPage ? last.page + 1 : undefined),
+    staleTime: 60 * 1000,
+  });
+}
+
+/** Prefetch a single prompt (used for hover prefetch on cards). */
+export function usePrefetchPrompt() {
+  const qc = useQueryClient();
+  const { session } = useAuth();
+  return (issueNumber: number) =>
+    void qc.prefetchQuery({
+      queryKey: ['prompt', issueNumber],
+      queryFn: () => fetchPrompt(issueNumber, session?.token),
+      staleTime: 5 * 60 * 1000,
+    });
+}
+
 export function usePrompt(issueNumber: number) {
+  const { session } = useAuth();
   return useQuery({
     queryKey: ['prompt', issueNumber],
-    queryFn: () => fetchPrompt(issueNumber),
+    queryFn: () => fetchPrompt(issueNumber, session?.token),
     enabled: !!issueNumber,
     staleTime: 5 * 60 * 1000,
   });
 }
 
 export function usePromptComments(issueNumber: number) {
+  const { session } = useAuth();
   return useQuery({
     queryKey: ['prompt-comments', issueNumber],
-    queryFn: () => fetchPromptComments(issueNumber),
+    queryFn: () => fetchPromptComments(issueNumber, session?.token),
     enabled: !!issueNumber,
     staleTime: 5 * 60 * 1000,
   });

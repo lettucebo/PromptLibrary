@@ -5,7 +5,10 @@ import { ArrowLeft, Plus, Save, Trash2, X } from 'lucide-react';
 import { useCreateLabel, useDeleteLabel, useLabels, useUpdateLabel } from '../hooks/useLabels';
 import { parseLabel } from '../lib/github';
 import { config } from '../config';
+import { useToast } from '../contexts/ToastContext';
+import { errorMessageKey } from '../lib/errors';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ConfirmDialog from '../components/ConfirmDialog';
 import type { Label } from '../types';
 
 const CATEGORY_ORDER = ['model', 'type', 'usecase', 'lang', 'difficulty', 'other'] as const;
@@ -16,12 +19,14 @@ function colorIsValid(c: string): boolean {
 
 export default function LabelsAdminPage() {
   const { t } = useTranslation();
+  const toast = useToast();
   const { data: labels = [], isLoading } = useLabels();
   const createMut = useCreateLabel();
   const updateMut = useUpdateLabel();
   const deleteMut = useDeleteLabel();
 
   const [creating, setCreating] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Label | null>(null);
 
   const grouped = new Map<(typeof CATEGORY_ORDER)[number], Label[]>();
   for (const cat of CATEGORY_ORDER) grouped.set(cat, []);
@@ -29,6 +34,17 @@ export default function LabelsAdminPage() {
     const cat = parseLabel(lbl).category;
     grouped.get(cat)?.push(lbl);
   }
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteMut.mutate(deleteTarget.name, {
+      onSuccess: () => {
+        toast.success('toast.labelDeleted');
+        setDeleteTarget(null);
+      },
+      onError: (e) => toast.error(errorMessageKey(e)),
+    });
+  };
 
   if (isLoading) return <LoadingSpinner className="py-20" />;
 
@@ -61,6 +77,7 @@ export default function LabelsAdminPage() {
           onCancel={() => setCreating(false)}
           onSubmit={async (input) => {
             await createMut.mutateAsync(input);
+            toast.success('toast.labelCreated');
             setCreating(false);
           }}
         />
@@ -83,11 +100,9 @@ export default function LabelsAdminPage() {
                     isPending={updateMut.isPending || deleteMut.isPending}
                     onSubmit={async (input) => {
                       await updateMut.mutateAsync({ currentName: lbl.name, ...input });
+                      toast.success('toast.labelUpdated');
                     }}
-                    onDelete={async () => {
-                      if (!window.confirm(t('label.deleteConfirm', { name: lbl.name }))) return;
-                      await deleteMut.mutateAsync(lbl.name);
-                    }}
+                    onDelete={() => setDeleteTarget(lbl)}
                   />
                 ))}
               </div>
@@ -95,6 +110,17 @@ export default function LabelsAdminPage() {
           );
         })}
       </div>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title={t('label.delete')}
+        body={deleteTarget ? t('label.deleteConfirm', { name: deleteTarget.name }) : ''}
+        confirmLabel={t('label.delete')}
+        tone="danger"
+        isPending={deleteMut.isPending}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }
@@ -105,7 +131,7 @@ interface LabelRowProps {
   isPending?: boolean;
   onSubmit: (input: { name: string; color: string; description?: string }) => Promise<void>;
   onCancel?: () => void;
-  onDelete?: () => Promise<void>;
+  onDelete?: () => void;
 }
 
 function LabelRow({ mode, label, isPending, onSubmit, onCancel, onDelete }: LabelRowProps) {
@@ -179,7 +205,7 @@ function LabelRow({ mode, label, isPending, onSubmit, onCancel, onDelete }: Labe
         {mode === 'edit' && onDelete && !isProtected && (
           <button
             type="button"
-            onClick={() => void onDelete()}
+            onClick={() => onDelete()}
             disabled={isPending}
             className="p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
             title={t('label.delete')}

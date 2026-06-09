@@ -2,10 +2,14 @@ import { Link } from 'react-router-dom';
 import { MessageSquare, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LabelBadge from './LabelBadge';
+import CopyButton from './CopyButton';
+import { usePrefetchPrompt } from '../hooks/usePrompts';
+import { highlight } from '../lib/highlight';
 import type { Prompt } from '../types';
 
 interface PromptCardProps {
   prompt: Prompt;
+  query?: string;
 }
 
 function useFormatDate() {
@@ -24,17 +28,27 @@ function previewText(body: string, maxLen = 200): string {
   return stripped.slice(0, maxLen).trimEnd() + '…';
 }
 
-export default function PromptCard({ prompt }: PromptCardProps) {
+export default function PromptCard({ prompt, query = '' }: PromptCardProps) {
   const { t } = useTranslation();
   const formatDate = useFormatDate();
+  const prefetch = usePrefetchPrompt();
+  const preview = prompt.body ? previewText(prompt.body) : '';
+
   return (
     <Link
       to={`/prompt/${prompt.number}`}
+      onMouseEnter={() => prefetch(prompt.number)}
+      onFocus={() => prefetch(prompt.number)}
       className="block bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-600 transition-all duration-200 group"
     >
-      <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 line-clamp-2">
-        {prompt.title}
-      </h3>
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 line-clamp-2">
+          {highlight(prompt.title, query)}
+        </h3>
+        {prompt.body && (
+          <CopyButton text={prompt.body} iconOnly stopPropagation className="flex-shrink-0" />
+        )}
+      </div>
 
       {prompt.parsedLabels.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-3">
@@ -44,9 +58,9 @@ export default function PromptCard({ prompt }: PromptCardProps) {
         </div>
       )}
 
-      {prompt.body && (
+      {preview && (
         <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3 mb-4">
-          {previewText(prompt.body)}
+          {highlight(preview, query)}
         </p>
       )}
 

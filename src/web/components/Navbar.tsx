@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, Sun, Moon, LogIn } from 'lucide-react';
+import { Sparkles, Sun, Moon, LogIn, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
 import UserMenu from './UserMenu';
@@ -13,6 +14,12 @@ interface NavbarProps {
 export default function Navbar({ darkMode, onToggleDark }: NavbarProps) {
   const { t } = useTranslation();
   const { isAuthenticated, startLogin } = useAuth();
+  const [loggingIn, setLoggingIn] = useState(false);
+
+  const handleLogin = () => {
+    setLoggingIn(true);
+    startLogin();
+  };
   return (
     <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur border-b border-gray-200 dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
@@ -36,11 +43,12 @@ export default function Navbar({ darkMode, onToggleDark }: NavbarProps) {
           ) : (
             <button
               type="button"
-              onClick={() => startLogin()}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700"
+              onClick={handleLogin}
+              disabled={loggingIn}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-70"
             >
-              <LogIn className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('nav.login')}</span>
+              {loggingIn ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
+              <span className="hidden sm:inline">{loggingIn ? t('common.loading') : t('nav.login')}</span>
             </button>
           )}
         </div>

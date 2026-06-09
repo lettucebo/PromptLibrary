@@ -22,6 +22,10 @@ const PREVIEW_OPTIONS = {
   rehypePlugins: [[rehypeSanitize]] as never,
 };
 
+const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+const MAX_IMAGE_MB = 5;
+const MAX_IMAGE_BYTES = MAX_IMAGE_MB * 1024 * 1024;
+
 function isMobileViewport(): boolean {
   if (typeof window === 'undefined') return false;
   return window.matchMedia('(max-width: 768px)').matches;
@@ -57,6 +61,14 @@ export default function MarkdownEditor({
 
   const handleFile = useCallback(
     async (file: File) => {
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        onUploadError?.(t('prompt.editor.uploadTypeError'));
+        return;
+      }
+      if (file.size > MAX_IMAGE_BYTES) {
+        onUploadError?.(t('prompt.editor.uploadSizeError', { max: MAX_IMAGE_MB }));
+        return;
+      }
       const placeholder = `![uploading...](pending-${crypto.randomUUID()})`;
       onChange(`${valueRef.current}${valueRef.current.endsWith('\n') ? '' : '\n'}${placeholder}\n`);
       try {
@@ -82,7 +94,9 @@ export default function MarkdownEditor({
       const images = files.filter((f) => f.type.startsWith('image/'));
       if (images.length === 0) return;
       e.preventDefault();
-      for (const file of images) void handleFile(file);
+      void (async () => {
+        for (const file of images) await handleFile(file);
+      })();
     },
     [handleFile],
   );
@@ -93,7 +107,9 @@ export default function MarkdownEditor({
       const images = files.filter((f) => f.type.startsWith('image/'));
       if (images.length === 0) return;
       e.preventDefault();
-      for (const file of images) void handleFile(file);
+      void (async () => {
+        for (const file of images) await handleFile(file);
+      })();
     },
     [handleFile],
   );

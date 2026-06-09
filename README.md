@@ -186,7 +186,7 @@ In the Markdown editor, **drag & drop** or **paste** an image to upload. The ima
 
 - **Last-write-wins.** Concurrent edits are not detected.
 - **Orphan attachment files** are not auto-deleted on archive/restore.
-- **Rate limit** — read-only browsing uses unauthenticated calls (60/hour). Authenticated users have 5,000/hour.
+- **Rate limit** — browsing uses the GitHub Search API (≈10 req/min unauthenticated, ≈30 req/min authenticated); hitting the limit surfaces a friendly in-app message. Authenticated users also get the higher REST limit (5,000/hour) for detail/CRUD calls.
 
 ## License
 

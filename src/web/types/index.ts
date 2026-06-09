@@ -50,6 +50,9 @@ export interface FilterState {
   difficulty: string[];
 }
 
+export type PromptSort = 'created' | 'updated' | 'comments';
+export type SortOrder = 'asc' | 'desc';
+
 export type RepoPermission = 'admin' | 'maintain' | 'write' | 'triage' | 'read' | 'none';
 
 export interface AuthUser {
