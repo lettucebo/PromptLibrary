@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**Prompt Library** is a SPA (single-page application) on GitHub Pages at `https://lettucebo.github.io/PromptLibrary/`, backed by GitHub Issues as the data store. Read access is unauthenticated; write access (CRUD) requires a GitHub OAuth login that goes through a tiny Cloudflare Worker for the secret-bearing code → token exchange.
+**Prompt Library** is a SPA (single-page application) on GitHub Pages at `https://prompt.yu.money/`, backed by GitHub Issues as the data store. Read access is unauthenticated; write access (CRUD) requires a GitHub OAuth login that goes through a tiny Cloudflare Worker for the secret-bearing code → token exchange.
 
 ## Architecture
 
@@ -20,7 +20,7 @@
 
 ## Authentication
 
-- OAuth App registers `https://lettucebo.github.io/PromptLibrary/` as the callback URL (root, not a hash route).
+- OAuth App registers `https://prompt.yu.money/` as the callback URL (root, not a hash route).
 - An inline script in [src/web/index.html](../src/web/index.html) detects `?code=&state=` and rewrites the URL to `#/auth/callback?...` **before React boots**, so HashRouter sees the right route.
 - The Cloudflare Worker (`POST /auth/exchange`) holds the OAuth client secret, exchanges the `code`, then immediately calls `GET /repos/{owner}/{repo}/collaborators/{user}/permission`. Only `admin` / `maintain` / `write` permissions get a token back; others get 403.
 - The frontend stores `{token, user, ...}` in `localStorage` and calls the GitHub API directly with that token. The Worker never proxies CRUD.
@@ -120,7 +120,7 @@ package.json                     Scripts run vite/tsc with --config src/web/...
 src/
   web/                           ← Frontend SPA source + its build configs
     index.html                   Entry HTML (CSP meta + theme & OAuth bootstrap; loads /main.tsx)
-    vite.config.ts               root: __dirname, base: '/PromptLibrary/', build.outDir: '../../dist'
+    vite.config.ts               root: __dirname, base: '/', build.outDir: '../../dist'
     tsconfig.json                include: ['**/*.ts','**/*.tsx'], exclude: ['vite.config.ts']
     tsconfig.node.json           composite project for vite.config.ts
     tailwind.config.js           content paths relative to this file

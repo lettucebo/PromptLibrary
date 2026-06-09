@@ -11,6 +11,6 @@
     "OWNER": "lettucebo",
     "REPO": "PromptLibrary",
     "GITHUB_CLIENT_ID": "Ov23li7yvXjWskhH6VHt",
-    "ALLOWED_ORIGIN": "https://lettucebo.github.io,http://localhost:5173"
+    "ALLOWED_ORIGIN": "https://prompt.yu.money,http://localhost:5173"
   }
 }

@@ -2,7 +2,7 @@
 
 A curated library of AI prompts, powered by GitHub Issues and built with React + Vite. Includes optional GitHub-OAuth-gated CRUD for repository collaborators.
 
-🌐 **Live Site**: [https://lettucebo.github.io/PromptLibrary/](https://lettucebo.github.io/PromptLibrary/)
+🌐 **Live Site**: [https://prompt.yu.money/](https://prompt.yu.money/)
 
 ## Features
 
@@ -118,8 +118,8 @@ pnpm preview
 
 1. https://github.com/settings/developers → **New OAuth App**
 2. Application name: `PromptLibrary`
-3. Homepage URL: `https://lettucebo.github.io/PromptLibrary/`
-4. **Authorization callback URL:** `https://lettucebo.github.io/PromptLibrary/` (the bare site root; `index.html` rewrites the OAuth `?code=&state=` to `#/auth/callback?...` before React boots).
+3. Homepage URL: `https://prompt.yu.money/`
+4. **Authorization callback URL:** `https://prompt.yu.money/` (the bare site root; `index.html` rewrites the OAuth `?code=&state=` to `#/auth/callback?...` before React boots).
 5. Generate a client secret. Save:
    - **Client ID** → SPA `VITE_GITHUB_CLIENT_ID` and Worker `wrangler.jsonc` `vars.GITHUB_CLIENT_ID`
    - **Client Secret** → `pnpm -C src/worker dlx wrangler secret put GITHUB_CLIENT_SECRET`

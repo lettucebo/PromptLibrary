@@ -11,7 +11,7 @@ const here = dirname(fileURLToPath(import.meta.url))
 export default defineConfig({
   root: here,
   plugins: [react()],
-  base: '/PromptLibrary/',
+  base: '/',
   build: {
     outDir: '../../dist',
     emptyOutDir: true,
