@@ -36,6 +36,7 @@
     "model": "🤖 模型",
     "type": "📁 類型",
     "usecase": "🎯 使用情境",
+    "output": "🎬 輸出類型",
     "lang": "🌐 語言",
     "difficulty": "📊 難度"
   },

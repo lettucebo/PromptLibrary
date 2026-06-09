@@ -36,6 +36,7 @@
     "model": "🤖 Model",
     "type": "📁 Type",
     "usecase": "🎯 Use Case",
+    "output": "🎬 Output Type",
     "lang": "🌐 Language",
     "difficulty": "📊 Difficulty"
   },

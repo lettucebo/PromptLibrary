@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import LabelBadge from './LabelBadge';
 import type { Prompt } from '../types';
 
-const PICK_ORDER = ['usecase', 'type', 'model', 'lang', 'difficulty'] as const;
+const PICK_ORDER = ['usecase', 'type', 'output', 'model', 'lang', 'difficulty'] as const;
 
 /**
  * Shows up to 4 prompts that share a representative label with the current one.

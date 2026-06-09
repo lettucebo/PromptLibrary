@@ -9,7 +9,7 @@ export interface ParsedLabel {
   raw: Label;
   prefix: string | null;
   value: string;
-  category: 'model' | 'type' | 'usecase' | 'lang' | 'difficulty' | 'other';
+  category: 'model' | 'type' | 'usecase' | 'output' | 'lang' | 'difficulty' | 'other';
 }
 
 export interface Prompt {
@@ -46,6 +46,7 @@ export interface FilterState {
   model: string[];
   type: string[];
   usecase: string[];
+  output: string[];
   lang: string[];
   difficulty: string[];
 }
