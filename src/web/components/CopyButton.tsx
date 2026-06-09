@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Copy, Check } from 'lucide-react';
 import { copyText } from '../lib/clipboard';
+import { estimateTokens } from '../lib/tokens';
 import { useToast } from '../contexts/ToastContext';
 
 interface CopyButtonProps {
@@ -13,6 +14,8 @@ interface CopyButtonProps {
   label?: string;
   /** Stop click from bubbling (useful inside a clickable card). */
   stopPropagation?: boolean;
+  /** When true, show a success toast with an estimated token count on copy. */
+  notifyTokens?: boolean;
 }
 
 /**
@@ -25,6 +28,7 @@ export default function CopyButton({
   iconOnly = false,
   label,
   stopPropagation = false,
+  notifyTokens = false,
 }: CopyButtonProps) {
   const { t } = useTranslation();
   const toast = useToast();
@@ -41,6 +45,9 @@ export default function CopyButton({
       return;
     }
     setCopied(true);
+    if (notifyTokens) {
+      toast.success('toast.copiedTokens', { tokens: estimateTokens(text) });
+    }
     window.setTimeout(() => setCopied(false), 2000);
   };
 
@@ -48,8 +55,8 @@ export default function CopyButton({
     ? 'p-1.5 rounded-md'
     : 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium';
   const tone = copied
-    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600';
+    ? 'bg-success-container text-accent-green'
+    : 'bg-subtle text-content-soft hover:bg-line';
 
   return (
     <button

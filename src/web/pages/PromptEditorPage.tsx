@@ -10,6 +10,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import { useCreatePrompt, usePrompt, useUpdatePrompt } from '../hooks/usePrompts';
 import { useToast } from '../contexts/ToastContext';
 import { errorMessageKey } from '../lib/errors';
+import { countChars, estimateTokens } from '../lib/tokens';
 
 interface DraftShape {
   title: string;
@@ -159,31 +160,31 @@ export default function PromptEditorPage() {
       <button
         type="button"
         onClick={tryLeave}
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 mb-6"
+        className="inline-flex items-center gap-1.5 text-sm text-content-soft hover:text-primary mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
         {t('prompt.back')}
       </button>
 
-      <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+      <h1 className="text-xl font-bold text-content mb-6">
         {editing ? t('prompt.editor.editTitle') : t('prompt.editor.newTitle')}
       </h1>
 
       {draftAvailable && (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 px-4 py-3">
-          <span className="text-sm text-indigo-800 dark:text-indigo-300">{t('prompt.editor.draftFound')}</span>
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3">
+          <span className="text-sm text-primary">{t('prompt.editor.draftFound')}</span>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={restoreDraft}
-              className="px-3 py-1.5 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700"
+              className="px-3 py-1.5 rounded-lg text-sm font-medium bg-primary text-on-primary hover:bg-primary-dark"
             >
               {t('prompt.editor.restoreDraft')}
             </button>
             <button
               type="button"
               onClick={dismissDraft}
-              className="px-3 py-1.5 rounded-lg text-sm font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/40"
+              className="px-3 py-1.5 rounded-lg text-sm font-medium text-primary hover:bg-primary/15"
             >
               {t('prompt.editor.discardDraft')}
             </button>
@@ -191,13 +192,13 @@ export default function PromptEditorPage() {
         </div>
       )}
 
-      <div className="space-y-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
+      <div className="space-y-6 bg-card rounded-2xl border border-line p-6">
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+            <label htmlFor="title" className="block text-sm font-medium text-content-soft">
               {t('prompt.editor.fieldTitle')}
             </label>
-            <span className={`text-xs ${titleLen > 256 ? 'text-red-600 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'}`}>
+            <span className={`text-xs ${titleLen > 256 ? 'text-error' : 'text-content-faint'}`}>
               {titleLen}/256
             </span>
           </div>
@@ -211,21 +212,26 @@ export default function PromptEditorPage() {
             }}
             placeholder={t('prompt.editor.fieldTitlePlaceholder')}
             maxLength={256}
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 rounded-lg border border-line bg-card text-content focus:outline-none focus:ring-2 focus:ring-primary"
           />
-          {titleError && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{titleError}</p>}
+          {titleError && <p className="mt-1 text-xs text-error">{titleError}</p>}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-            {t('prompt.editor.fieldBody')}
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-sm font-medium text-content-soft">
+              {t('prompt.editor.fieldBody')}
+            </label>
+            <span className="text-xs text-content-faint">
+              {t('common.charsTokens', { chars: countChars(body), tokens: estimateTokens(body) })}
+            </span>
+          </div>
           <MarkdownEditor value={body} onChange={setBody} onUploadError={setUploadError} />
-          {uploadError && <p className="mt-2 text-xs text-red-600 dark:text-red-400">{uploadError}</p>}
+          {uploadError && <p className="mt-2 text-xs text-error">{uploadError}</p>}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+          <label className="block text-sm font-medium text-content-soft mb-2">
             {t('prompt.editor.fieldLabels')}
           </label>
           <LabelMultiSelect selected={labels} onChange={setLabels} />
@@ -235,31 +241,31 @@ export default function PromptEditorPage() {
         </div>
 
         {submitError && (
-          <div className="rounded-lg border border-red-200 dark:border-red-700 bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-700 dark:text-red-300 flex items-center justify-between gap-3">
+          <div className="rounded-lg border border-error/40 bg-error-container p-3 text-sm text-error flex items-center justify-between gap-3">
             <span>{t(submitError, { defaultValue: t('errors.unknown') })}</span>
             <button
               type="button"
               onClick={() => void doSubmit()}
               disabled={isPending}
-              className="px-3 py-1 rounded-md text-xs font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+              className="px-3 py-1 rounded-md text-xs font-medium bg-error text-on-error hover:bg-error/90 disabled:opacity-50"
             >
               {t('common.retry')}
             </button>
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-3 border-t border-gray-100 dark:border-gray-700 pt-4">
+        <div className="flex items-center justify-end gap-3 border-t border-line pt-4">
           <button
             type="button"
             onClick={tryLeave}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="px-4 py-2 rounded-lg text-sm font-medium text-content-soft hover:bg-subtle"
           >
             {t('prompt.editor.discard')}
           </button>
           <button
             type="submit"
             disabled={isPending}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-primary text-on-primary hover:bg-primary-dark disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
             {isPending ? t('prompt.editor.submitting') : t('prompt.editor.submit')}

@@ -4,9 +4,9 @@ import { useToast } from '../contexts/ToastContext';
 import type { ToastItem, ToastType } from '../contexts/ToastContext';
 
 const TONE: Record<ToastType, string> = {
-  success: 'bg-green-600 text-white',
-  error: 'bg-red-600 text-white',
-  info: 'bg-indigo-600 text-white',
+  success: 'bg-success-container text-accent-green',
+  error: 'bg-error-container text-accent-red',
+  info: 'bg-info-container text-info',
 };
 
 function ToastIcon({ type }: { type: ToastType }) {

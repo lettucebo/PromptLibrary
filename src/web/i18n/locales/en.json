@@ -28,7 +28,9 @@
     },
     "totalResults_one": "{{count}} prompt",
     "totalResults_other": "{{count}} prompts",
-    "endOfResults": "End of results"
+    "endOfResults": "End of results",
+    "recentlyViewed": "Recently viewed",
+    "surprise": "Surprise me"
   },
   "filter": {
     "model": "🤖 Model",
@@ -52,6 +54,16 @@
     "viewOnGitHub": "View on GitHub",
     "share": "Copy share link",
     "promptHeading": "Prompt",
+    "openInAI": "Open in AI tool",
+    "related": "Related prompts",
+    "copyText": "Copy as plain text",
+    "copyMarkdown": "Copy as Markdown",
+    "copyJson": "Copy as JSON",
+    "variables": {
+      "title": "Fill in variables",
+      "copyFilled": "Copy filled prompt",
+      "reset": "Reset"
+    },
     "versionHistory": "Version History",
     "versionCount_one": "{{count}} version",
     "versionCount_other": "{{count}} versions",
@@ -139,7 +151,10 @@
     "labelCreated": "Label created",
     "labelUpdated": "Label updated",
     "labelDeleted": "Label deleted",
-    "linkCopied": "Share link copied"
+    "linkCopied": "Share link copied",
+    "copiedTokens": "Copied · ≈ {{tokens}} tokens",
+    "copiedJson": "Copied as JSON",
+    "openedInAI": "Copied · opening {{tool}}"
   },
   "errors": {
     "rateLimited": "GitHub API rate limit reached. Please try again later.",
@@ -165,6 +180,7 @@
     "deleting": "Deleting…",
     "copy": "Copy",
     "copied": "Copied!",
-    "retry": "Retry"
+    "retry": "Retry",
+    "charsTokens": "{{chars}} chars · ≈ {{tokens}} tokens"
   }
 }

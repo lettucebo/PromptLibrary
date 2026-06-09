@@ -3,6 +3,7 @@ import { MessageSquare, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LabelBadge from './LabelBadge';
 import CopyButton from './CopyButton';
+import OpenInAIButton from './OpenInAIButton';
 import { usePrefetchPrompt } from '../hooks/usePrompts';
 import { highlight } from '../lib/highlight';
 import type { Prompt } from '../types';
@@ -39,14 +40,22 @@ export default function PromptCard({ prompt, query = '' }: PromptCardProps) {
       to={`/prompt/${prompt.number}`}
       onMouseEnter={() => prefetch(prompt.number)}
       onFocus={() => prefetch(prompt.number)}
-      className="block bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-600 transition-all duration-200 group"
+      className="block bg-card rounded-xl border border-line p-5 hover:shadow-md hover:border-primary transition-all duration-200 group"
     >
       <div className="flex items-start justify-between gap-2 mb-2">
-        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 line-clamp-2">
+        <h3 className="text-base font-semibold text-content group-hover:text-primary line-clamp-2">
           {highlight(prompt.title, query)}
         </h3>
         {prompt.body && (
-          <CopyButton text={prompt.body} iconOnly stopPropagation className="flex-shrink-0" />
+          <div className="flex-shrink-0 flex items-center gap-1">
+            <OpenInAIButton
+              text={prompt.body}
+              compact
+              stopPropagation
+              className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity"
+            />
+            <CopyButton text={prompt.body} iconOnly stopPropagation notifyTokens />
+          </div>
         )}
       </div>
 
@@ -59,12 +68,12 @@ export default function PromptCard({ prompt, query = '' }: PromptCardProps) {
       )}
 
       {preview && (
-        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3 mb-4">
+        <p className="text-sm text-content-soft line-clamp-3 mb-4">
           {highlight(preview, query)}
         </p>
       )}
 
-      <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500">
+      <div className="flex items-center gap-4 text-xs text-content-faint">
         <span className="flex items-center gap-1">
           <Calendar className="h-3.5 w-3.5" />
           {formatDate(prompt.created_at)}

@@ -24,10 +24,10 @@ export default function CategoryFilter({ filters, onChange }: CategoryFilterProp
         const selected = (filters[category as keyof FilterState] as string[]) ?? [];
 
         return (
-          <div key={category} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div key={category} className="bg-card rounded-xl border border-line overflow-hidden">
             <button
               onClick={() => toggle(category)}
-              className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+              className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-content-soft hover:bg-subtle"
             >
               <span>{t(`filter.${category}`, { defaultValue: category })}</span>
               {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
@@ -45,9 +45,9 @@ export default function CategoryFilter({ filters, onChange }: CategoryFilterProp
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => onChange(category, value)}
-                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        className="rounded border-line-strong text-primary focus:ring-primary"
                       />
-                      <span className={`text-sm ${isSelected ? 'text-indigo-600 dark:text-indigo-400 font-medium' : 'text-gray-600 dark:text-gray-400'}`}>
+                      <span className={`text-sm ${isSelected ? 'text-primary font-medium' : 'text-content-soft'}`}>
                         {value}
                       </span>
                     </label>

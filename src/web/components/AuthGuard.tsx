@@ -27,7 +27,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     return (
       <div className="py-20 text-center">
         <LoadingSpinner className="mb-4" />
-        <p className="text-sm text-gray-500 dark:text-gray-400">{t('auth.loginRequired')}</p>
+        <p className="text-sm text-content-soft">{t('auth.loginRequired')}</p>
       </div>
     );
   }

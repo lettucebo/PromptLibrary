@@ -29,22 +29,22 @@ export default function UserMenu() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 p-1 rounded-full hover:ring-2 hover:ring-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="flex items-center gap-2 p-1 rounded-full hover:ring-2 hover:ring-primary focus:outline-none focus:ring-2 focus:ring-primary"
         aria-label={t('nav.userMenu')}
       >
         <img src={user.avatarUrl} alt={user.login} className="h-8 w-8 rounded-full" />
       </button>
       {open && (
-        <div className="absolute right-0 mt-2 w-56 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg overflow-hidden z-50">
-          <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.name ?? user.login}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">@{user.login}</p>
+        <div className="absolute right-0 mt-2 w-56 rounded-xl bg-card border border-line shadow-lg overflow-hidden z-50">
+          <div className="px-4 py-3 border-b border-line">
+            <p className="text-sm font-medium text-content">{user.name ?? user.login}</p>
+            <p className="text-xs text-content-soft">@{user.login}</p>
           </div>
           <div className="py-1">
             <Link
               to="/prompt/new"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="flex items-center gap-2 px-4 py-2 text-sm text-content-soft hover:bg-subtle"
             >
               <Plus className="h-4 w-4" />
               {t('nav.newPrompt')}
@@ -52,20 +52,20 @@ export default function UserMenu() {
             <Link
               to="/admin/labels"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="flex items-center gap-2 px-4 py-2 text-sm text-content-soft hover:bg-subtle"
             >
               <Tag className="h-4 w-4" />
               {t('nav.labels')}
             </Link>
           </div>
-          <div className="border-t border-gray-100 dark:border-gray-700 py-1">
+          <div className="border-t border-line py-1">
             <button
               type="button"
               onClick={() => {
                 setOpen(false);
                 void signOut();
               }}
-              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-content-soft hover:bg-subtle"
             >
               <LogOut className="h-4 w-4" />
               {t('nav.logout')}

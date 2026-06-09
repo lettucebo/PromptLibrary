@@ -2,10 +2,87 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Warm Morandi design tokens (see /DESIGN.md). Values are RGB channels so
+ * Tailwind's `rgb(var(--token) / <alpha-value>)` mapping supports opacity
+ * modifiers. Dark theme overrides the same semantic names under `.dark`.
+ */
+:root {
+  --c-primary: 129 178 154;
+  --c-primary-dark: 90 154 122;
+  --c-primary-light: 168 212 190;
+  --c-on-primary: 255 255 255;
+
+  --c-page: 250 248 245;
+  --c-card: 255 255 255;
+  --c-subtle: 240 238 235;
+
+  --c-content: 61 58 54;
+  --c-content-soft: 154 149 144;
+  --c-content-faint: 181 176 171;
+
+  --c-line: 232 230 227;
+  --c-line-strong: 212 209 205;
+
+  --c-success: 129 178 154;
+  --c-success-container: 232 245 233;
+  --c-warning: 242 204 143;
+  --c-warning-container: 255 248 225;
+  --c-on-warning: 61 58 54;
+  --c-error: 224 122 95;
+  --c-error-container: 252 228 222;
+  --c-on-error: 255 255 255;
+  --c-info: 61 64 91;
+  --c-info-container: 227 237 248;
+
+  --c-accent-green: 61 139 110;
+  --c-accent-red: 201 86 60;
+  --c-accent-yellow: 179 139 45;
+  --c-accent-blue: 61 64 91;
+}
+
+.dark {
+  --c-primary: 74 222 128;
+  --c-primary-dark: 34 197 94;
+  --c-primary-light: 134 239 172;
+  --c-on-primary: 0 0 0;
+
+  --c-page: 10 10 11;
+  --c-card: 20 20 22;
+  --c-subtle: 26 26 28;
+
+  --c-content: 232 230 227;
+  --c-content-soft: 102 102 102;
+  --c-content-faint: 74 74 74;
+
+  --c-line: 42 42 44;
+  --c-line-strong: 58 58 60;
+
+  --c-success: 74 222 128;
+  --c-success-container: 26 58 42;
+  --c-warning: 255 230 109;
+  --c-warning-container: 58 48 32;
+  --c-on-warning: 61 58 54;
+  --c-error: 255 107 107;
+  --c-error-container: 58 26 26;
+  --c-on-error: 255 255 255;
+  --c-info: 78 205 196;
+  --c-info-container: 26 42 58;
+
+  --c-accent-green: 74 222 128;
+  --c-accent-red: 255 107 107;
+  --c-accent-yellow: 255 230 109;
+  --c-accent-blue: 78 205 196;
+}
+
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    background-color: rgb(var(--c-page));
+    color: rgb(var(--c-content));
   }
 }
 

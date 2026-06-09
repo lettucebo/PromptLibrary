@@ -32,6 +32,8 @@ export const STORAGE_KEYS = {
   LANG: 'pl_lang',
   GH_TOKEN: 'pl_gh_token',
   GH_USER: 'pl_gh_user',
+  /** Recently viewed prompts (localStorage, JSON array). */
+  RECENT: 'pl_recent',
   /** sessionStorage keys */
   OAUTH_STATE: 'pl_oauth_state',
   OAUTH_RETURN_TO: 'pl_oauth_return_to',

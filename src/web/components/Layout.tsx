@@ -28,7 +28,7 @@ export default function Layout() {
   }, [i18n.resolvedLanguage, darkMode]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <div className="min-h-screen bg-page transition-colors duration-200">
       <Navbar darkMode={darkMode} onToggleDark={() => setDarkMode((p) => !p)} />
       <ToastViewport />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
