@@ -31,6 +31,7 @@ import { copyText } from '../lib/clipboard';
 import { errorMessageKey } from '../lib/errors';
 import { countChars, estimateTokens } from '../lib/tokens';
 import LabelBadge from '../components/LabelBadge';
+import FavoriteButton from '../components/FavoriteButton';
 import LoadingSpinner from '../components/LoadingSpinner';
 import CommentEditor from '../components/CommentEditor';
 import CopyButton from '../components/CopyButton';
@@ -309,8 +310,9 @@ export default function PromptDetailPage() {
 
       <div className="bg-card rounded-2xl border border-line p-6 mb-6">
         <div className="flex items-start justify-between gap-4 mb-4">
-          <h1 className="text-xl font-bold text-content leading-tight">{prompt.title}</h1>
+          <h1 className="font-title text-2xl font-bold leading-tight text-content">{prompt.title}</h1>
           <div className="flex-shrink-0 flex items-center gap-1">
+            <FavoriteButton snapshot={snapshotFromPrompt(prompt)} className="border border-line" />
             {isAuthenticated && (
               <>
                 <Link

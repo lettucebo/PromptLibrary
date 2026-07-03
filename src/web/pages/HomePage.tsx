@@ -75,7 +75,7 @@ function FeaturedLead({ item }: { item: PromptCardItem }) {
           </p>
         )}
       </div>
-      <Link to={`/prompt/${item.number}`} aria-label={item.title} className="absolute inset-0" />
+      <Link to={`/prompt/${item.number}`} aria-label={item.title} className="absolute inset-0 z-[2]" />
       <div className="absolute right-3 top-3 z-10">
         <FavoriteButton snapshot={snapshot} stopPropagation className="bg-black/30 text-white hover:bg-black/40" />
       </div>

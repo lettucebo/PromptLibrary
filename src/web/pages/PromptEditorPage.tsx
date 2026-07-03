@@ -207,7 +207,7 @@ export default function PromptEditorPage() {
         {t('prompt.back')}
       </button>
 
-      <h1 className="text-xl font-bold text-content mb-6">
+      <h1 className="font-title text-2xl font-bold text-content mb-6">
         {editing ? t('prompt.editor.editTitle') : t('prompt.editor.newTitle')}
       </h1>
 

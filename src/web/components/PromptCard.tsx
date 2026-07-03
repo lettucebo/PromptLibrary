@@ -86,7 +86,7 @@ export default function PromptCard({ item, query = '', variant = 'grid' }: Promp
             <FileText className="h-4 w-4" />
           </div>
         )}
-        <div className="min-w-0 flex-1 pr-16">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <h3 className="font-medium text-content truncate group-hover:text-primary">
               {highlight(item.title, query)}
@@ -101,7 +101,7 @@ export default function PromptCard({ item, query = '', variant = 'grid' }: Promp
             <p className="text-sm text-content-soft truncate">{highlight(item.preview, query)}</p>
           )}
         </div>
-        <div className="hidden shrink-0 sm:block">{meta}</div>
+        <div className="mr-20 hidden shrink-0 sm:block">{meta}</div>
         {link}
         {actions}
       </article>
