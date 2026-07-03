@@ -39,6 +39,8 @@ export const STORAGE_KEYS = {
   FAVORITES: 'pl_favorites',
   /** Results list layout preference: 'grid' | 'list' (localStorage). */
   VIEW: 'pl_view',
+  /** Sidebar collapsed state: 'collapsed' | 'expanded' (localStorage). */
+  SIDEBAR: 'pl_sidebar',
   /** sessionStorage keys */
   OAUTH_STATE: 'pl_oauth_state',
   OAUTH_RETURN_TO: 'pl_oauth_return_to',

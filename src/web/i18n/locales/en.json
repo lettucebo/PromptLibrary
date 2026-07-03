@@ -37,7 +37,8 @@
     "totalResults_other": "{{count}} prompts",
     "endOfResults": "End of results",
     "recentlyViewed": "Recently viewed",
-    "surprise": "Surprise me"
+    "surprise": "Surprise me",
+    "featured": "Featured"
   },
   "filter": {
     "model": "🤖 Model",

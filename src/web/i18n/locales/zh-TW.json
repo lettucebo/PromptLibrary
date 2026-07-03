@@ -37,7 +37,8 @@
     "totalResults_other": "共 {{count}} 筆 prompt",
     "endOfResults": "已顯示全部結果",
     "recentlyViewed": "最近瀏覽",
-    "surprise": "隨機探索"
+    "surprise": "隨機探索",
+    "featured": "精選"
   },
   "filter": {
     "model": "🤖 模型",
