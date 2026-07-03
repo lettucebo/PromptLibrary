@@ -39,6 +39,7 @@ import VariableFiller from '../components/VariableFiller';
 import RelatedPrompts from '../components/RelatedPrompts';
 import OutputExamples from '../components/OutputExamples';
 import { addRecentlyViewed } from '../lib/recentlyViewed';
+import { snapshotFromPrompt } from '../lib/collections';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Markdown from '../components/Markdown';
 import type { PromptComment } from '../types';
@@ -236,7 +237,7 @@ export default function PromptDetailPage() {
   const isArchived = prompt?.labels.some((l) => l.name === config.archivedLabel) ?? false;
 
   useEffect(() => {
-    if (prompt) addRecentlyViewed({ number: prompt.number, title: prompt.title });
+    if (prompt) addRecentlyViewed(snapshotFromPrompt(prompt));
   }, [prompt?.number, prompt?.title]);
 
   const handleArchive = () => {

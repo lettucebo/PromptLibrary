@@ -8,7 +8,14 @@
     "language": "語言",
     "darkMode": "切換深色模式",
     "lightMode": "切換淺色模式",
-    "userMenu": "使用者選單"
+    "userMenu": "使用者選單",
+    "browse": "瀏覽",
+    "favorites": "我的最愛",
+    "recent": "最近瀏覽",
+    "collapse": "收合側欄",
+    "expand": "展開側欄",
+    "openMenu": "開啟選單",
+    "closeMenu": "關閉選單"
   },
   "home": {
     "searchPlaceholder": "依標題或內容搜尋 prompt…",
@@ -38,7 +45,26 @@
     "usecase": "🎯 使用情境",
     "output": "🎬 輸出類型",
     "lang": "🌐 語言",
-    "difficulty": "📊 難度"
+    "difficulty": "📊 難度",
+    "matchAll": "符合全部"
+  },
+  "command": {
+    "searchPlaceholder": "搜尋 prompts…",
+    "gridView": "網格檢視",
+    "listView": "清單檢視"
+  },
+  "view": {
+    "all": "全部 Prompt",
+    "favorites": "我的最愛",
+    "recent": "最近瀏覽"
+  },
+  "favorite": {
+    "add": "加入最愛",
+    "remove": "移除最愛"
+  },
+  "card": {
+    "video": "影片",
+    "hasVideo": "含影片"
   },
   "empty": {
     "noPrompts": "尚未建立任何 prompt",
@@ -47,7 +73,11 @@
     "createFirstAuthed": "建立你的第一筆 prompt 吧！",
     "tryAdjusting": "試著調整搜尋關鍵字或移除部分篩選條件。",
     "defaultTitle": "找不到 prompt",
-    "defaultDescription": "試著調整搜尋條件或篩選條件。"
+    "defaultDescription": "試著調整搜尋條件或篩選條件。",
+    "noFavorites": "尚無收藏",
+    "noFavoritesDesc": "點任一 prompt 的星號即可收藏於此。",
+    "noRecent": "尚未瀏覽任何項目",
+    "noRecentDesc": "你開啟過的 prompt 會出現在這裡。"
   },
   "prompt": {
     "back": "返回 Library",
