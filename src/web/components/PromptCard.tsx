@@ -12,6 +12,9 @@ interface PromptCardProps {
   item: PromptCardItem;
   query?: string;
   variant?: 'grid' | 'list';
+  /** Prefetch the detail on hover/focus. Disable for local snapshot views
+   * (favorites / recent) so they never trigger per-item GitHub API calls. */
+  enablePrefetch?: boolean;
 }
 
 function useFormatDate() {
@@ -24,7 +27,7 @@ function useFormatDate() {
     });
 }
 
-export default function PromptCard({ item, query = '', variant = 'grid' }: PromptCardProps) {
+export default function PromptCard({ item, query = '', variant = 'grid', enablePrefetch = true }: PromptCardProps) {
   const { t } = useTranslation();
   const formatDate = useFormatDate();
   const prefetch = usePrefetchPrompt();
@@ -37,8 +40,8 @@ export default function PromptCard({ item, query = '', variant = 'grid' }: Promp
     <Link
       to={`/prompt/${item.number}`}
       aria-label={item.title}
-      onMouseEnter={() => prefetch(item.number)}
-      onFocus={() => prefetch(item.number)}
+      onMouseEnter={enablePrefetch ? () => prefetch(item.number) : undefined}
+      onFocus={enablePrefetch ? () => prefetch(item.number) : undefined}
       className="absolute inset-0"
     />
   );

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -62,11 +62,20 @@ export default function Sidebar({ drawerOpen, onCloseDrawer, collapsed, onToggle
   const isRecent = onHome && view === 'recent';
   const isLabels = location.pathname.startsWith('/admin');
 
-  // Mobile drawer a11y: Esc to close, scroll-lock, focus the close button.
+  // Mobile drawer a11y: Esc to close, scroll-lock, focus the close button on
+  // open, and restore focus to the trigger on close. Uses a ref for the close
+  // callback so unrelated Layout re-renders don't re-run this (which would yank
+  // focus). A full focus-trap is intentionally omitted for a simple nav drawer.
+  const onCloseRef = useRef(onCloseDrawer);
+  useLayoutEffect(() => {
+    onCloseRef.current = onCloseDrawer;
+  });
+
   useEffect(() => {
     if (!drawerOpen) return;
+    const prevFocus = document.activeElement as HTMLElement | null;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCloseDrawer();
+      if (e.key === 'Escape') onCloseRef.current();
     };
     document.addEventListener('keydown', onKey);
     const prevOverflow = document.body.style.overflow;
@@ -75,8 +84,9 @@ export default function Sidebar({ drawerOpen, onCloseDrawer, collapsed, onToggle
     return () => {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = prevOverflow;
+      prevFocus?.focus?.();
     };
-  }, [drawerOpen, onCloseDrawer]);
+  }, [drawerOpen]);
 
   return (
     <>
@@ -90,9 +100,11 @@ export default function Sidebar({ drawerOpen, onCloseDrawer, collapsed, onToggle
 
       <aside
         aria-label={t('nav.appName')}
-        className={`fixed top-0 left-0 z-50 flex h-screen shrink-0 flex-col border-r border-line bg-card transition-[transform,width] duration-200 lg:sticky lg:z-30 lg:translate-x-0 ${
+        role={drawerOpen ? 'dialog' : undefined}
+        aria-modal={drawerOpen ? true : undefined}
+        className={`fixed top-0 left-0 z-50 flex h-screen shrink-0 flex-col border-r border-line bg-card transition-[transform,width] duration-200 lg:sticky lg:z-30 lg:visible lg:translate-x-0 ${
           collapsed ? 'w-16' : 'w-72'
-        } ${drawerOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        } ${drawerOpen ? 'visible translate-x-0' : 'invisible -translate-x-full'}`}
       >
         {/* Brand + collapse / close */}
         <div className="flex h-16 items-center justify-between border-b border-line px-4">

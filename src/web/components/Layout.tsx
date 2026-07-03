@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
@@ -44,20 +44,25 @@ export default function Layout() {
     }
   }, [collapsed]);
 
+  const handleCloseDrawer = useCallback(() => setDrawerOpen(false), []);
+  const handleOpenDrawer = useCallback(() => setDrawerOpen(true), []);
+  const handleToggleCollapse = useCallback(() => setCollapsed((p) => !p), []);
+  const handleToggleDark = useCallback(() => setDarkMode((p) => !p), []);
+
   return (
     <div className="min-h-screen bg-page transition-colors duration-200">
       <div className="flex">
         <Sidebar
           drawerOpen={drawerOpen}
-          onCloseDrawer={() => setDrawerOpen(false)}
+          onCloseDrawer={handleCloseDrawer}
           collapsed={collapsed}
-          onToggleCollapse={() => setCollapsed((p) => !p)}
+          onToggleCollapse={handleToggleCollapse}
         />
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <CommandBar
             darkMode={darkMode}
-            onToggleDark={() => setDarkMode((p) => !p)}
-            onOpenDrawer={() => setDrawerOpen(true)}
+            onToggleDark={handleToggleDark}
+            onOpenDrawer={handleOpenDrawer}
           />
           <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
             <Outlet />

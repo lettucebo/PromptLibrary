@@ -310,13 +310,13 @@ export default function HomePage() {
           {listView === 'list' ? (
             <div className="divide-y divide-line overflow-hidden rounded-xl border border-line bg-card">
               {items.map((it) => (
-                <PromptCard key={it.number} item={it} query={q} variant="list" />
+                <PromptCard key={it.number} item={it} query={q} variant="list" enablePrefetch={isBrowse} />
               ))}
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {gridItems.map((it) => (
-                <PromptCard key={it.number} item={it} query={q} variant="grid" />
+                <PromptCard key={it.number} item={it} query={q} variant="grid" enablePrefetch={isBrowse} />
               ))}
             </div>
           )}

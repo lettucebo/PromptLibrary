@@ -13,5 +13,5 @@ export const SORT_MAP: Record<SortKey, { sort: PromptSort; order: SortOrder }> =
 export const SORT_KEYS: SortKey[] = ['newest', 'oldest', 'updated', 'versions'];
 
 export function sortKeyFromParam(raw: string | null): SortKey {
-  return raw && raw in SORT_MAP ? (raw as SortKey) : 'newest';
+  return raw && Object.prototype.hasOwnProperty.call(SORT_MAP, raw) ? (raw as SortKey) : 'newest';
 }

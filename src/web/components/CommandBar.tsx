@@ -59,7 +59,10 @@ export default function CommandBar({ darkMode, onToggleDark, onOpenDrawer }: Com
     return () => window.clearTimeout(id);
   }, [input]);
 
+  const prevDebounced = useRef(debounced);
   useEffect(() => {
+    const changed = debounced !== prevDebounced.current;
+    prevDebounced.current = debounced;
     if (onHome) {
       if (debounced === (params.get('q') ?? '')) return;
       setParams(
@@ -75,11 +78,12 @@ export default function CommandBar({ darkMode, onToggleDark, onOpenDrawer }: Com
         },
         { replace: true },
       );
-    } else if (debounced) {
+    } else if (debounced && changed) {
+      // Only navigate when the user actually typed a new query off-home — not
+      // when leaving home (route transition) while a stale query is present.
       navigate(`/?q=${encodeURIComponent(debounced)}`);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debounced, onHome]);
+  }, [debounced, onHome, params, setParams, navigate]);
 
   // ---- "/" focuses search, Esc clears when focused ----
   useEffect(() => {
