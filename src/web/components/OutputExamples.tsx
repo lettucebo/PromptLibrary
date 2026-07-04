@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { OutputExample } from '../types';
 import { parseYouTubeId, youtubeEmbedUrl } from '../lib/youtube';
+import { promptForLang } from '../lib/promptLang';
 import Markdown from './Markdown';
 import Modal from './Modal';
 
@@ -32,7 +33,7 @@ function YouTubeEmbed({ url, title }: { url: string; title: string }) {
  * text). Renders nothing when there are no valid items.
  */
 export default function OutputExamples({ outputs }: { outputs: OutputExample[] }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [lightbox, setLightbox] = useState<{ url: string; caption?: string } | null>(null);
 
   const valid = outputs.filter((o) => (o.type === 'youtube' ? parseYouTubeId(o.url) !== null : true));
@@ -70,10 +71,10 @@ export default function OutputExamples({ outputs }: { outputs: OutputExample[] }
             )}
             {o.type === 'text' && (
               <div className="rounded-lg border border-line bg-subtle p-3">
-                <Markdown>{o.text}</Markdown>
+                <Markdown>{promptForLang(o.text, i18n.language)}</Markdown>
               </div>
             )}
-            {o.caption && <figcaption className="text-xs text-content-faint">{o.caption}</figcaption>}
+            {o.caption && <figcaption className="text-xs text-content-faint">{promptForLang(o.caption, i18n.language)}</figcaption>}
           </figure>
         ))}
       </div>
