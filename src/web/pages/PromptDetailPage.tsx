@@ -428,7 +428,7 @@ export default function PromptDetailPage() {
           <h2 className="text-sm font-semibold text-content-soft uppercase tracking-wider mb-4">
             {t('prompt.notesHeading')}
           </h2>
-          <Markdown>{prompt.notes}</Markdown>
+          <Markdown>{promptForLang(prompt.notes, i18n.language)}</Markdown>
         </div>
       )}
 
