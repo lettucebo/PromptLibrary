@@ -18,12 +18,13 @@ export function stripMarkdown(text: string): string {
     .trim();
 }
 
-/** Structured JSON export of a prompt. */
-export function promptToJson(prompt: Prompt): string {
+/** Structured JSON export of a prompt. `promptText` overrides the copied body
+ * (e.g. the language-resolved prompt) when provided. */
+export function promptToJson(prompt: Prompt, promptText?: string): string {
   return JSON.stringify(
     {
       title: prompt.title,
-      prompt: prompt.promptText,
+      prompt: promptText ?? prompt.promptText,
       ...(prompt.notes ? { notes: prompt.notes } : {}),
       ...(prompt.outputs.length ? { outputs: prompt.outputs } : {}),
       labels: prompt.labels.map((l) => l.name),

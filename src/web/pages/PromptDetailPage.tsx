@@ -30,6 +30,7 @@ import { config } from '../config';
 import { copyText } from '../lib/clipboard';
 import { errorMessageKey } from '../lib/errors';
 import { countChars, estimateTokens } from '../lib/tokens';
+import { promptForLang } from '../lib/promptLang';
 import LabelBadge from '../components/LabelBadge';
 import FavoriteButton from '../components/FavoriteButton';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -222,7 +223,7 @@ function CommentCard({
 }
 
 export default function PromptDetailPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const formatDate = useFormatDate();
   const toast = useToast();
   const { id } = useParams<{ id: string }>();
@@ -277,6 +278,8 @@ export default function PromptDetailPage() {
       </div>
     );
   }
+
+  const displayPrompt = promptForLang(prompt.promptText, i18n.language);
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -390,12 +393,12 @@ export default function PromptDetailPage() {
             </span>
           )}
           {prompt.user && <span className="flex items-center gap-1">{t('prompt.by', { user: prompt.user.login })}</span>}
-          {prompt.promptText && (
+          {displayPrompt && (
             <span className="flex items-center gap-1">
               <Hash className="h-3.5 w-3.5" />
               {t('common.charsTokens', {
-                chars: countChars(prompt.promptText),
-                tokens: estimateTokens(prompt.promptText),
+                chars: countChars(displayPrompt),
+                tokens: estimateTokens(displayPrompt),
               })}
             </span>
           )}
@@ -411,11 +414,11 @@ export default function PromptDetailPage() {
             </h2>
           </div>
           <div className="flex items-center gap-2">
-            <CopyMenu prompt={prompt} />
+            <CopyMenu prompt={prompt} text={displayPrompt} />
           </div>
         </div>
 
-        <Markdown>{prompt.promptText}</Markdown>
+        <Markdown>{displayPrompt}</Markdown>
       </div>
 
       {prompt.notes && (
@@ -429,7 +432,7 @@ export default function PromptDetailPage() {
 
       <OutputExamples outputs={prompt.outputs} />
 
-      <VariableFiller template={prompt.promptText} />
+      <VariableFiller template={displayPrompt} />
 
       {(loadingComments || comments.length > 0) && (
         <div>

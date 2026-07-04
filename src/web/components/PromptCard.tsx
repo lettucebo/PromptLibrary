@@ -6,6 +6,8 @@ import CopyButton from './CopyButton';
 import FavoriteButton from './FavoriteButton';
 import { usePrefetchPrompt } from '../hooks/usePrompts';
 import { highlight } from '../lib/highlight';
+import { promptForLang } from '../lib/promptLang';
+import { previewText } from '../lib/promptPreview';
 import { cardItemToSnapshot, type PromptCardItem } from '../lib/promptCardItem';
 
 interface PromptCardProps {
@@ -28,11 +30,13 @@ function useFormatDate() {
 }
 
 export default function PromptCard({ item, query = '', variant = 'grid', enablePrefetch = true }: PromptCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const formatDate = useFormatDate();
   const prefetch = usePrefetchPrompt();
 
   const snapshot = cardItemToSnapshot(item);
+  const langPrompt = item.promptText ? promptForLang(item.promptText, i18n.language) : undefined;
+  const preview = langPrompt ? previewText(langPrompt) : item.preview;
   const isVideoThumb = item.thumb?.kind === 'video';
   const badgeLabel = isVideoThumb ? t('card.video') : item.hasVideo ? t('card.hasVideo') : null;
 
@@ -52,7 +56,7 @@ export default function PromptCard({ item, query = '', variant = 'grid', enableP
         variant === 'list' ? 'right-3 top-1/2 -translate-y-1/2' : 'right-2.5 top-2.5'
       }`}
     >
-      {item.promptText && <CopyButton text={item.promptText} iconOnly stopPropagation notifyTokens />}
+      {langPrompt && <CopyButton text={langPrompt} iconOnly stopPropagation notifyTokens />}
       <FavoriteButton snapshot={snapshot} stopPropagation />
     </div>
   );
@@ -100,8 +104,8 @@ export default function PromptCard({ item, query = '', variant = 'grid', enableP
               ))}
             </span>
           </div>
-          {item.preview && (
-            <p className="text-sm text-content-soft truncate">{highlight(item.preview, query)}</p>
+          {preview && (
+            <p className="text-sm text-content-soft truncate">{highlight(preview, query)}</p>
           )}
         </div>
         <div className="mr-20 hidden shrink-0 sm:block">{meta}</div>
@@ -147,9 +151,9 @@ export default function PromptCard({ item, query = '', variant = 'grid', enableP
         <h3 className="font-semibold text-content group-hover:text-primary line-clamp-2 pr-14">
           {highlight(item.title, query)}
         </h3>
-        {item.preview && (
+        {preview && (
           <p className={`mt-1 text-sm text-content-soft ${item.thumb ? 'line-clamp-2' : 'line-clamp-3'}`}>
-            {highlight(item.preview, query)}
+            {highlight(preview, query)}
           </p>
         )}
         <div className="mt-3 pt-1">{meta}</div>
