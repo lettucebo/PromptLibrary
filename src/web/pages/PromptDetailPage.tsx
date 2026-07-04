@@ -405,6 +405,8 @@ export default function PromptDetailPage() {
         </div>
       </div>
 
+      <VariableFiller template={displayPrompt} />
+
       <div className="bg-card rounded-2xl border border-line p-6 mb-6">
         <div className="flex items-center justify-between mb-4 gap-2">
           <div className="flex items-center gap-2">
@@ -431,8 +433,6 @@ export default function PromptDetailPage() {
       )}
 
       <OutputExamples outputs={prompt.outputs} />
-
-      <VariableFiller template={displayPrompt} />
 
       {(loadingComments || comments.length > 0) && (
         <div>
