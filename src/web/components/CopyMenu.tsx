@@ -10,12 +10,13 @@ import type { Prompt } from '../types';
 type Kind = 'text' | 'md' | 'json';
 
 /** Copy-to-clipboard with a format menu: plain text / Markdown / JSON. */
-export default function CopyMenu({ prompt }: { prompt: Prompt }) {
+export default function CopyMenu({ prompt, text }: { prompt: Prompt; text?: string }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
+  const src = text ?? prompt.promptText;
 
   useEffect(() => {
     if (!open) return;
@@ -27,8 +28,7 @@ export default function CopyMenu({ prompt }: { prompt: Prompt }) {
   }, [open]);
 
   const doCopy = async (kind: Kind) => {
-    const payload =
-      kind === 'json' ? promptToJson(prompt) : kind === 'text' ? stripMarkdown(prompt.promptText) : prompt.promptText;
+    const payload = kind === 'json' ? promptToJson(prompt, src) : kind === 'text' ? stripMarkdown(src) : src;
     const ok = await copyText(payload);
     if (!ok) {
       toast.error('errors.copyFailed');
