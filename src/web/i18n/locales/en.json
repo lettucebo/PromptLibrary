@@ -8,7 +8,14 @@
     "language": "Language",
     "darkMode": "Switch to dark mode",
     "lightMode": "Switch to light mode",
-    "userMenu": "User menu"
+    "userMenu": "User menu",
+    "browse": "Browse",
+    "favorites": "Favorites",
+    "recent": "Recent",
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "home": {
     "searchPlaceholder": "Search prompts by title or content…",
@@ -30,7 +37,8 @@
     "totalResults_other": "{{count}} prompts",
     "endOfResults": "End of results",
     "recentlyViewed": "Recently viewed",
-    "surprise": "Surprise me"
+    "surprise": "Surprise me",
+    "featured": "Featured"
   },
   "filter": {
     "model": "🤖 Model",
@@ -38,7 +46,26 @@
     "usecase": "🎯 Use Case",
     "output": "🎬 Output Type",
     "lang": "🌐 Language",
-    "difficulty": "📊 Difficulty"
+    "difficulty": "📊 Difficulty",
+    "matchAll": "match all"
+  },
+  "command": {
+    "searchPlaceholder": "Search prompts…",
+    "gridView": "Grid view",
+    "listView": "List view"
+  },
+  "view": {
+    "all": "All prompts",
+    "favorites": "Favorites",
+    "recent": "Recently viewed"
+  },
+  "favorite": {
+    "add": "Add to favorites",
+    "remove": "Remove from favorites"
+  },
+  "card": {
+    "video": "Video",
+    "hasVideo": "Includes video"
   },
   "empty": {
     "noPrompts": "No prompts yet",
@@ -47,7 +74,11 @@
     "createFirstAuthed": "Create your first prompt!",
     "tryAdjusting": "Try adjusting your search query or removing some filters.",
     "defaultTitle": "No prompts found",
-    "defaultDescription": "Try adjusting your search or filters."
+    "defaultDescription": "Try adjusting your search or filters.",
+    "noFavorites": "No favorites yet",
+    "noFavoritesDesc": "Tap the star on any prompt to save it here.",
+    "noRecent": "Nothing viewed yet",
+    "noRecentDesc": "Prompts you open will appear here."
   },
   "prompt": {
     "back": "Back to Library",

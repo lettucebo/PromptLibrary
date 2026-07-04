@@ -59,7 +59,7 @@ export default function LabelsAdminPage() {
       </Link>
 
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold text-content">{t('label.managePageTitle')}</h1>
+        <h1 className="font-title text-2xl font-bold text-content">{t('label.managePageTitle')}</h1>
         <button
           type="button"
           onClick={() => setCreating(true)}

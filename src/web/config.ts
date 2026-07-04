@@ -33,8 +33,14 @@ export const STORAGE_KEYS = {
   LANG: 'pl_lang',
   GH_TOKEN: 'pl_gh_token',
   GH_USER: 'pl_gh_user',
-  /** Recently viewed prompts (localStorage, JSON array). */
+  /** Recently viewed prompts (localStorage, JSON array of snapshots). */
   RECENT: 'pl_recent',
+  /** Favorited prompts (localStorage, JSON array of snapshots). */
+  FAVORITES: 'pl_favorites',
+  /** Results list layout preference: 'grid' | 'list' (localStorage). */
+  VIEW: 'pl_view',
+  /** Sidebar collapsed state: 'collapsed' | 'expanded' (localStorage). */
+  SIDEBAR: 'pl_sidebar',
   /** sessionStorage keys */
   OAUTH_STATE: 'pl_oauth_state',
   OAUTH_RETURN_TO: 'pl_oauth_return_to',

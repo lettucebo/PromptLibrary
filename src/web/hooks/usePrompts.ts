@@ -33,7 +33,7 @@ export interface SearchPromptsArgs {
 }
 
 /** Infinite, server-side search over prompt issues (GitHub Search API). */
-export function useSearchPrompts(args: SearchPromptsArgs) {
+export function useSearchPrompts(args: SearchPromptsArgs, enabled = true) {
   const { session } = useAuth();
   return useInfiniteQuery({
     queryKey: ['prompts', 'search', args.text, args.sort, args.order, args.filters],
@@ -49,6 +49,7 @@ export function useSearchPrompts(args: SearchPromptsArgs) {
     initialPageParam: 1,
     getNextPageParam: (last) => (last.hasNextPage ? last.page + 1 : undefined),
     staleTime: 60 * 1000,
+    enabled,
   });
 }
 
